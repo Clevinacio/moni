@@ -1,0 +1,14 @@
+FROM maven:3.9.13-eclipse-temurin-25 AS build
+WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+FROM eclipse-temurin:25-jre-alpine
+WORKDIR /app
+
+RUN addgroup -S monigroup && adduser -S moniuser -G monigroup
+USER moniuser
+COPY --from=build /app/target/*.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar", "--spring.profiles.active=docker"]

@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: moni
+  liquibase:
+    enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: none

@@ -1,0 +1,49 @@
+services:
+  moni-app:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - ..:/workspaces:cached
+      - /var/run/docker.sock:/var/run/docker.sock # Permite controlar o Docker host
+    network_mode: service:moni-db
+    command: sleep infinity
+
+  moni-db:
+    image: postgres:18-alpine
+    container_name: moni-db
+    environment:
+      - POSTGRES_DB=monidb
+      - POSTGRES_USER=moniuser
+      - POSTGRES_PASSWORD=monipass
+    ports:
+      - "5432:5432"
+    volumes:
+      - moni-data:/var/lib/postgresql/data # Persistência de dados
+
+  moni-backend:
+    build: ./backend
+    container_name: moni-backend
+    profiles:
+      - test
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://moni-db:5432/monidb
+      - SPRING_DATASOURCE_USERNAME=moniuser
+      - SPRING_DATASOURCE_PASSWORD=monipass
+    depends_on:
+      - moni-db # Garante a ordem de subida
+
+  moni-frontend:
+    build: ./frontend
+    container_name: moni-frontend
+    profiles:
+      - test
+    ports:
+      - "80:80"
+    depends_on:
+      - moni-backend
+
+volumes:
+  moni-data:
