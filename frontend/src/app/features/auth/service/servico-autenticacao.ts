@@ -105,16 +105,19 @@ function normalizarPrefixoApi(apiUrl: string): string {
   const urlSemBarraFinal = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
 
   try {
-    // Se consegue fazer parse, é uma URL absoluta com schema + host
-    // Retorna a URL completa para funcionar em qualquer ambiente
     new URL(urlSemBarraFinal);
     return urlSemBarraFinal;
   } catch {
-    // Se não conseguir fazer parse, trata como path relativo
-    if (urlSemBarraFinal.startsWith('/')) {
-      return urlSemBarraFinal;
-    }
-
-    return `/${urlSemBarraFinal}`;
+    return normalizarCaminhoRelativo(urlSemBarraFinal);
   }
+}
+
+function normalizarCaminhoRelativo(caminho: string): string {
+  const caminhoComBarraInicial = caminho.startsWith('/') ? caminho : `/${caminho}`;
+
+  if (caminhoComBarraInicial.length > 1 && caminhoComBarraInicial.endsWith('/')) {
+    return caminhoComBarraInicial.slice(0, -1);
+  }
+
+  return caminhoComBarraInicial;
 }

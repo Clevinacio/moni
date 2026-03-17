@@ -54,7 +54,7 @@ describe('RF01 - Contrato do ServicoAutenticacao futuro (TDD RED)', () => {
     const payload = construirPayloadCadastroValido();
 
     const promessaResposta = executarCadastro(suporte.servico, payload);
-    const requisicao = suporte.controladorHttp.expectOne(endpointCadastro);
+    const requisicao = esperarRequisicaoPorCaminho(suporte.controladorHttp, endpointCadastro);
 
     expect(requisicao.request.method).toBe('POST');
     expect(requisicao.request.body).toEqual(payload);
@@ -76,7 +76,7 @@ describe('RF01 - Contrato do ServicoAutenticacao futuro (TDD RED)', () => {
     const payload = construirPayloadLoginValido();
 
     const promessaResposta = executarAutenticacao(suporte.servico, payload);
-    const requisicao = suporte.controladorHttp.expectOne(endpointLogin);
+    const requisicao = esperarRequisicaoPorCaminho(suporte.controladorHttp, endpointLogin);
 
     expect(requisicao.request.method).toBe('POST');
     expect(requisicao.request.body).toEqual(payload);
@@ -96,7 +96,10 @@ describe('RF01 - Contrato do ServicoAutenticacao futuro (TDD RED)', () => {
     const suporte = await criarSuporteServicoAutenticacao();
 
     const promessaCadastro = executarCadastro(suporte.servico, construirPayloadCadastroValido());
-    const requisicaoCadastro = suporte.controladorHttp.expectOne(endpointCadastro);
+    const requisicaoCadastro = esperarRequisicaoPorCaminho(
+      suporte.controladorHttp,
+      endpointCadastro,
+    );
 
     expect(temPropriedadePropria(requisicaoCadastro.request.body, 'userId')).toBe(false);
     requisicaoCadastro.flush({
@@ -111,7 +114,10 @@ describe('RF01 - Contrato do ServicoAutenticacao futuro (TDD RED)', () => {
       suporte.servico,
       construirPayloadLoginValido(),
     );
-    const requisicaoAutenticacao = suporte.controladorHttp.expectOne(endpointLogin);
+    const requisicaoAutenticacao = esperarRequisicaoPorCaminho(
+      suporte.controladorHttp,
+      endpointLogin,
+    );
 
     expect(temPropriedadePropria(requisicaoAutenticacao.request.body, 'userId')).toBe(false);
     requisicaoAutenticacao.flush({
@@ -127,7 +133,10 @@ describe('RF01 - Contrato do ServicoAutenticacao futuro (TDD RED)', () => {
     const payload = construirPayloadCadastroValido();
 
     const promessaSucesso = executarCadastro(suporte.servico, payload);
-    const requisicaoSucesso = suporte.controladorHttp.expectOne(endpointCadastro);
+    const requisicaoSucesso = esperarRequisicaoPorCaminho(
+      suporte.controladorHttp,
+      endpointCadastro,
+    );
 
     requisicaoSucesso.flush({
       id: 'u-01',
@@ -140,7 +149,10 @@ describe('RF01 - Contrato do ServicoAutenticacao futuro (TDD RED)', () => {
     validarFormatoSucessoEstrito(respostaSucesso, camposSucessoCadastro, 'cadastro');
 
     const promessaInvalida = executarCadastro(suporte.servico, payload);
-    const requisicaoInvalida = suporte.controladorHttp.expectOne(endpointCadastro);
+    const requisicaoInvalida = esperarRequisicaoPorCaminho(
+      suporte.controladorHttp,
+      endpointCadastro,
+    );
 
     requisicaoInvalida.flush({
       id: 'u-01',
@@ -159,7 +171,7 @@ describe('RF01 - Contrato do ServicoAutenticacao futuro (TDD RED)', () => {
     const payload = construirPayloadLoginValido();
 
     const promessaSucesso = executarAutenticacao(suporte.servico, payload);
-    const requisicaoSucesso = suporte.controladorHttp.expectOne(endpointLogin);
+    const requisicaoSucesso = esperarRequisicaoPorCaminho(suporte.controladorHttp, endpointLogin);
 
     requisicaoSucesso.flush({
       token: 'jwt-token-valido',
@@ -171,7 +183,7 @@ describe('RF01 - Contrato do ServicoAutenticacao futuro (TDD RED)', () => {
     validarFormatoSucessoEstrito(respostaSucesso, camposSucessoLogin, 'autenticacao');
 
     const promessaInvalida = executarAutenticacao(suporte.servico, payload);
-    const requisicaoInvalida = suporte.controladorHttp.expectOne(endpointLogin);
+    const requisicaoInvalida = esperarRequisicaoPorCaminho(suporte.controladorHttp, endpointLogin);
 
     requisicaoInvalida.flush({
       token: 'jwt-token-valido',
@@ -188,7 +200,7 @@ describe('RF01 - Contrato do ServicoAutenticacao futuro (TDD RED)', () => {
     const suporte = await criarSuporteServicoAutenticacao();
 
     const promessaResposta = executarCadastro(suporte.servico, construirPayloadCadastroValido());
-    const requisicao = suporte.controladorHttp.expectOne(endpointCadastro);
+    const requisicao = esperarRequisicaoPorCaminho(suporte.controladorHttp, endpointCadastro);
 
     requisicao.flush(
       {
@@ -208,7 +220,7 @@ describe('RF01 - Contrato do ServicoAutenticacao futuro (TDD RED)', () => {
     const suporte = await criarSuporteServicoAutenticacao();
 
     const promessaResposta = executarAutenticacao(suporte.servico, construirPayloadLoginValido());
-    const requisicao = suporte.controladorHttp.expectOne(endpointLogin);
+    const requisicao = esperarRequisicaoPorCaminho(suporte.controladorHttp, endpointLogin);
 
     requisicao.flush(
       {
@@ -228,7 +240,7 @@ describe('RF01 - Contrato do ServicoAutenticacao futuro (TDD RED)', () => {
     const suporte = await criarSuporteServicoAutenticacao();
 
     const promessaResposta = executarCadastro(suporte.servico, construirPayloadCadastroValido());
-    const requisicao = suporte.controladorHttp.expectOne(endpointCadastro);
+    const requisicao = esperarRequisicaoPorCaminho(suporte.controladorHttp, endpointCadastro);
 
     requisicao.flush(
       {
@@ -434,6 +446,24 @@ function chavesOrdenadas(valor: unknown): string[] {
   }
 
   return Object.keys(valor).sort();
+}
+
+function esperarRequisicaoPorCaminho(
+  controladorHttp: HttpTestingController,
+  caminhoEsperado: string,
+) {
+  return controladorHttp.expectOne(
+    (requisicao) => extrairCaminhoUrl(requisicao.url) === caminhoEsperado,
+    `requisicao para ${caminhoEsperado}`,
+  );
+}
+
+function extrairCaminhoUrl(url: string): string {
+  try {
+    return new URL(url, 'http://localhost').pathname;
+  } catch {
+    return url;
+  }
 }
 
 function temPropriedadePropria(valor: unknown, chave: string): boolean {
