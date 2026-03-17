@@ -9,3 +9,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+moni:
+  cors:
+    allowed-origins: http://frontend:80

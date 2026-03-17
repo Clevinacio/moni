@@ -2,7 +2,16 @@ spring:
   application:
     name: moni
   liquibase:
-    enabled: false
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yaml
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
+    open-in-view: false
+
+moni:
+  jwt:
+    secret: ${MONI_JWT_SECRET:01234567890123456789012345678901}
+    expiration-seconds: ${MONI_JWT_EXPIRATION_SECONDS:86400}
+  cors:
+    allowed-origins: ${MONI_CORS_ALLOWED_ORIGINS}
