@@ -1,6 +1,6 @@
 ---
 name: angular
-description: Angular best practices for scalable web application development.
+description: Melhores práticas de desenvolvimento para Angular.
 ---
 
 ### Angular e TypeScript Best Practices
@@ -59,3 +59,10 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Design services around a single responsibility
 - Use the `providedIn: 'root'` option for singleton services
 - Use the `inject()` function instead of constructor injection
+
+
+#### Moni Specific Requirements
+
+- Use **Tailwind CSS** para toda a estilização; evite CSS puro nos arquivos `.css` ou `.scss`.
+- Use **Lucide-angular** para todos os ícones.
+- Componentes de ação devem ter `min-h-[44px]` ou padding que garanta a hit area de **44px** para conformidade mobile.
