@@ -37,6 +37,15 @@ function resolverTemplatePaginaLogin(url: string): Promise<string> {
   if (url === './login.html') {
     return readFile(caminhoTemplatePaginaLogin, 'utf-8');
   }
+  if (url === './cabecalho-auth.html') {
+    return readFile('src/app/features/auth/ui/cabecalho-auth/cabecalho-auth.html', 'utf-8');
+  }
+  if (url === './input-formulario.html') {
+    return readFile('src/app/shared/components/input-formulario/input-formulario.html', 'utf-8');
+  }
+  if (url === './botao-submit.html') {
+    return readFile('src/app/shared/components/botao-submit/botao-submit.html', 'utf-8');
+  }
 
   throw new Error(`Contrato RF01 nao atendido: recurso de template nao mapeado (${url}).`);
 }

@@ -13,6 +13,8 @@ import { AuthStore } from '../../../../store/auth/auth-store';
 import { extrairMensagemErroAutenticacao } from '../../../../shared/utils/mensagem-erro-autenticacao';
 import { ServicoAutenticacao } from '../../service/servico-autenticacao';
 import { CabecalhoAuthComponent } from '../../ui/cabecalho-auth/cabecalho-auth';
+import { InputFormularioComponent } from '../../../../shared/components/input-formulario/input-formulario';
+import { BotaoSubmitComponent } from '../../../../shared/components/botao-submit/botao-submit';
 
 type FormularioLogin = {
   email: FormControl<string>;
@@ -21,7 +23,12 @@ type FormularioLogin = {
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, CabecalhoAuthComponent],
+  imports: [
+    ReactiveFormsModule,
+    CabecalhoAuthComponent,
+    InputFormularioComponent,
+    BotaoSubmitComponent,
+  ],
   templateUrl: './login.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {

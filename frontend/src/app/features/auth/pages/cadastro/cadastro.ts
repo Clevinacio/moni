@@ -13,6 +13,8 @@ import { AuthStore } from '../../../../store/auth/auth-store';
 import { extrairMensagemErroAutenticacao } from '../../../../shared/utils/mensagem-erro-autenticacao';
 import { ServicoAutenticacao } from '../../service/servico-autenticacao';
 import { CabecalhoAuthComponent } from '../../ui/cabecalho-auth/cabecalho-auth';
+import { InputFormularioComponent } from '../../../../shared/components/input-formulario/input-formulario';
+import { BotaoSubmitComponent } from '../../../../shared/components/botao-submit/botao-submit';
 
 type FormularioCadastro = {
   name: FormControl<string>;
@@ -22,7 +24,12 @@ type FormularioCadastro = {
 
 @Component({
   selector: 'app-cadastro',
-  imports: [ReactiveFormsModule, CabecalhoAuthComponent],
+  imports: [
+    ReactiveFormsModule,
+    CabecalhoAuthComponent,
+    InputFormularioComponent,
+    BotaoSubmitComponent,
+  ],
   templateUrl: './cadastro.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
