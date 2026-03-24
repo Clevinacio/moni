@@ -74,7 +74,7 @@ function construirParamsFiltros(filtros?: FiltrosTransacao): HttpParams {
 
 function validarListaTransacoes(valor: unknown): Transacao[] {
   if (!Array.isArray(valor)) {
-    throw new Error('Resposta de listagem invalida: esperado array de transacoes.');
+    throw new Error('Resposta de listagem inválida: esperado array de transações.');
   }
 
   return valor.map((item) => validarTransacao(item, 'listagem'));
@@ -82,7 +82,7 @@ function validarListaTransacoes(valor: unknown): Transacao[] {
 
 function validarTransacao(valor: unknown, contexto: string): Transacao {
   if (!ehRegistro(valor)) {
-    throw new Error(`Resposta de ${contexto} invalida: esperado objeto JSON.`);
+    throw new Error(`Resposta de ${contexto} inválida: esperado objeto JSON.`);
   }
 
   validarCamposEstritos(valor, ['id', 'descricao', 'valor', 'data', 'tipo', 'categoria'], contexto);
@@ -97,7 +97,7 @@ function validarTransacao(valor: unknown, contexto: string): Transacao {
     !ehTipoTransacao(tipo) ||
     !ehTexto(categoria)
   ) {
-    throw new Error(`Resposta de ${contexto} invalida: campos obrigatorios ausentes ou invalidos.`);
+    throw new Error(`Resposta de ${contexto} inválida: campos obrigatórios ausentes ou inválidos.`);
   }
 
   return {
@@ -123,7 +123,7 @@ function validarCamposEstritos(
     chavesAtuais.every((chave, indice) => chave === chavesEsperadas[indice]);
 
   if (!contratoValido) {
-    throw new Error(`Resposta de ${contexto} invalida: formato de campos inesperado.`);
+    throw new Error(`Resposta de ${contexto} inválida: formato de campos inesperado.`);
   }
 }
 
@@ -148,19 +148,12 @@ function normalizarPrefixoApi(apiUrl: string): string {
 
   try {
     const url = new URL(urlSemBarraFinal);
-    const caminho = url.pathname || '/';
-    return normalizarCaminhoRelativo(caminho);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      throw new Error('protocolo inválido');
+    }
+
+    return urlSemBarraFinal;
   } catch {
-    return normalizarCaminhoRelativo(urlSemBarraFinal);
+    throw new Error('Configuração inválida: environment.apiUrl deve ser uma URL absoluta.');
   }
-}
-
-function normalizarCaminhoRelativo(caminho: string): string {
-  const caminhoComBarraInicial = caminho.startsWith('/') ? caminho : `/${caminho}`;
-
-  if (caminhoComBarraInicial.length > 1 && caminhoComBarraInicial.endsWith('/')) {
-    return caminhoComBarraInicial.slice(0, -1);
-  }
-
-  return caminhoComBarraInicial;
 }

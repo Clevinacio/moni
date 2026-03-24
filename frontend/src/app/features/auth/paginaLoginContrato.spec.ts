@@ -160,6 +160,7 @@ async function criarSuportePaginaLogin(): Promise<SuportePaginaLogin> {
         token: 'jwt-token-valido',
         type: 'Bearer',
         userId: 'u-01',
+        name: 'Ana',
       });
     },
     cadastrar: (_payload: PayloadCadastro): Observable<unknown> =>

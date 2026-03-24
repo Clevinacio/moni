@@ -1,7 +1,5 @@
 import { Routes } from '@angular/router';
 
-import { authGuard } from '../../core/guards/auth-guard';
-
 export const authRoutes: Routes = [
   {
     path: '',
@@ -23,8 +21,8 @@ export const authRoutes: Routes = [
       },
       {
         path: 'painel',
-        canActivate: [authGuard],
-        loadComponent: () => import('./pages/painel/painel').then((modulo) => modulo.PaginaPainel),
+        pathMatch: 'full',
+        redirectTo: '/painel',
       },
     ],
   },

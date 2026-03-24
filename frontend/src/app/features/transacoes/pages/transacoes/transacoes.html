@@ -1,9 +1,9 @@
 <section aria-labelledby="titulo-transacoes"
-    class="mx-auto w-full max-w-6xl rounded-2xl border border-brand-light/50 bg-gradient-to-b from-brand-light/20 to-white p-6 shadow-[0_10px_35px_rgba(53,88,114,0.10)]">
-    <header class="mb-6 flex flex-wrap items-end justify-between gap-3">
+    class="mx-auto w-full max-w-7xl rounded-2xl border border-brand-light/50 bg-linear-to-b from-brand-light/20 to-white p-4 shadow-[0_10px_35px_rgba(53,88,114,0.10)] tablet:p-6 md:p-7">
+    <header class="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div class="grid gap-1">
-            <h1 id="titulo-transacoes" class="text-2xl font-bold text-brand-dark">Transacoes</h1>
-            <p class="text-sm text-brand-dark/75">Cadastre, edite, filtre e acompanhe seus lancamentos.</p>
+            <h1 id="titulo-transacoes" class="text-2xl font-bold text-brand-dark">Transações</h1>
+            <p class="text-sm text-brand-dark/75">Cadastre, edite, filtre e acompanhe seus lançamentos.</p>
         </div>
 
         <span
@@ -17,27 +17,27 @@
         (filtrarMensal)="aplicarFiltroMensal($event.mes, $event.ano)" (limpar)="limparFiltros()" />
 
     <form [formGroup]="formulario" (ngSubmit)="onSubmit()" novalidate class="mt-6 grid gap-4">
-        <div class="grid gap-4 md:grid-cols-2">
-            <app-input-formulario id="descricao" rotulo="Descricao" ajuda="Descreva o lancamento em ate 180 caracteres."
+        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <app-input-formulario id="descricao" rotulo="Descrição" ajuda="Descreva o lançamento em até 180 caracteres."
                 [invalido]="campoInvalido('descricao')" [controle]="formulario.controls.descricao" [mensagensErro]="{
-					required: 'Descricao e obrigatoria.',
-					maxlength: 'Descricao deve ter no maximo 180 caracteres.'
+                    required: 'Descrição é obrigatória.',
+                    maxlength: 'Descrição deve ter no máximo 180 caracteres.'
 				}" />
 
-            <app-input-formulario id="categoria" rotulo="Categoria" ajuda="Categoria com no maximo 100 caracteres."
+            <app-input-formulario id="categoria" rotulo="Categoria" ajuda="Categoria com no máximo 100 caracteres."
                 [invalido]="campoInvalido('categoria')" [controle]="formulario.controls.categoria" [mensagensErro]="{
-					required: 'Categoria e obrigatoria.',
-					maxlength: 'Categoria deve ter no maximo 100 caracteres.'
+                    required: 'Categoria é obrigatória.',
+                    maxlength: 'Categoria deve ter no máximo 100 caracteres.'
 				}" />
 
             <app-input-formulario id="valor" rotulo="Valor" tipo="number" ajuda="Use valor maior que zero."
                 [invalido]="campoInvalido('valor')" [controle]="formulario.controls.valor" [mensagensErro]="{
-					required: 'Valor e obrigatorio.',
+					required: 'Valor é obrigatório.',
 					min: 'Valor deve ser maior que zero.'
 				}" />
 
             <app-input-formulario id="data" rotulo="Data" tipo="date" [invalido]="campoInvalido('data')"
-                [controle]="formulario.controls.data" [mensagensErro]="{ required: 'Data e obrigatoria.' }" />
+                [controle]="formulario.controls.data" [mensagensErro]="{ required: 'Data é obrigatória.' }" />
         </div>
 
         <div class="grid gap-1.5">
@@ -50,12 +50,12 @@
             </select>
 
             @if (campoInvalido('tipo') === 'true') {
-            <p class="m-0 text-xs font-semibold text-error" role="alert">Tipo e obrigatorio.</p>
+            <p class="m-0 text-xs font-semibold text-error" role="alert">Tipo é obrigatório.</p>
             }
         </div>
 
         <div class="flex flex-wrap gap-3">
-            <app-botao-submit rotuloPadrao="Salvar transacao" rotuloCarregando="Salvando..." [carregando]="carregando()"
+            <app-botao-submit rotuloPadrao="Salvar transação" rotuloCarregando="Salvando..." [carregando]="carregando()"
                 [desabilitado]="formulario.invalid" />
         </div>
     </form>

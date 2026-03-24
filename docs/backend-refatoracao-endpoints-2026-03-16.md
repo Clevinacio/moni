@@ -57,3 +57,10 @@ Excluido:
 ## Resultado
 
 A concentracao de endpoints por controller foi aplicada no RF01 com padrao de contrato por interface, preservando compatibilidade de API e estabilidade dos testes.
+
+## Atualizacao de contrato - 2026-03-24
+
+- Endpoint afetado: `POST /api/v1/auth/login`
+- Mudanca aplicada no payload de sucesso (`200 OK`): adicao do campo `name` com o nome do usuario autenticado.
+- Campos de sucesso atuais do login: `token`, `type`, `userId`, `name`.
+- Ajustes realizados: DTO `LoginResponse`, mapeamento `AutenticacaoMapper`, testes de contrato backend e frontend, e persistencia de sessao no frontend para usar o nome retornado pela API.

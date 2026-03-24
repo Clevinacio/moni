@@ -29,7 +29,7 @@ const caminhoModuloServicoAutenticacao = './service/servico-autenticacao';
 const endpointCadastro = '/api/v1/auth/register';
 const endpointLogin = '/api/v1/auth/login';
 const camposSucessoCadastro = ['id', 'name', 'email', 'token'] as const;
-const camposSucessoLogin = ['token', 'type', 'userId'] as const;
+const camposSucessoLogin = ['token', 'type', 'userId', 'name'] as const;
 
 describe('RF01 - Contrato do ServicoAutenticacao futuro (TDD RED)', () => {
   afterEach(() => {
@@ -86,6 +86,7 @@ describe('RF01 - Contrato do ServicoAutenticacao futuro (TDD RED)', () => {
       token: 'jwt-token-valido',
       type: 'Bearer',
       userId: 'u-01',
+      name: 'Ana',
     });
 
     const resposta = await promessaResposta;
@@ -124,6 +125,7 @@ describe('RF01 - Contrato do ServicoAutenticacao futuro (TDD RED)', () => {
       token: 'jwt-token-valido',
       type: 'Bearer',
       userId: 'u-01',
+      name: 'Ana',
     });
     await promessaAutenticacao;
   });
@@ -166,7 +168,7 @@ describe('RF01 - Contrato do ServicoAutenticacao futuro (TDD RED)', () => {
     );
   });
 
-  it('deve tratar sucesso de autenticacao de forma estrita: token,type,userId', async () => {
+  it('deve tratar sucesso de autenticacao de forma estrita: token,type,userId,name', async () => {
     const suporte = await criarSuporteServicoAutenticacao();
     const payload = construirPayloadLoginValido();
 
@@ -177,6 +179,7 @@ describe('RF01 - Contrato do ServicoAutenticacao futuro (TDD RED)', () => {
       token: 'jwt-token-valido',
       type: 'Bearer',
       userId: 'u-01',
+      name: 'Ana',
     });
 
     const respostaSucesso = await promessaSucesso;

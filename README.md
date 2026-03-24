@@ -8,6 +8,13 @@ Aplicação de gestão financeira pessoal
 - `POST /api/v1/auth/register`
 - `POST /api/v1/auth/login`
 
+Contrato de sucesso do login (`200 OK`):
+
+- `token`
+- `type`
+- `userId`
+- `name`
+
 ### Transações (RF02)
 
 - `POST /api/v1/transactions` cria transação (requer JWT)

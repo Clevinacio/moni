@@ -185,10 +185,11 @@ class AutenticacaoContratoApiTddVermelhoTest {
 		assertCabecalhoJson(resposta);
 
 		Map<String, Object> corpo = lerJsonComoMapa(resposta.body());
-		assertEquals(3, corpo.size());
+		assertEquals(4, corpo.size());
 		assertCampoTextoNaoVazio(corpo, "token");
 		assertCampoTextoNaoVazio(corpo, "type");
 		assertCampoPresenteENaoNulo(corpo, "userId");
+		assertCampoTextoNaoVazio(corpo, "name");
 	}
 
 	private void assertContratoErroPadrao(HttpResponse<String> resposta, int statusEsperado) throws Exception {

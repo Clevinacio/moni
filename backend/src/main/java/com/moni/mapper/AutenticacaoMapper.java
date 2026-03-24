@@ -15,5 +15,6 @@ public interface AutenticacaoMapper {
 
 	@Mapping(target = "type", constant = "Bearer")
 	@Mapping(target = "userId", expression = "java(usuario.getId() != null ? usuario.getId().toString() : null)")
+	@Mapping(target = "name", source = "usuario.nome")
 	LoginResponse paraLoginResponse(Usuario usuario, String token);
 }

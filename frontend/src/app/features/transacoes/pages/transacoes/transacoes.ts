@@ -107,14 +107,14 @@ export class PaginaTransacoes {
         });
 
         this.transacoesStore.definirSucesso(
-          idEmEdicao ? 'Transacao atualizada com sucesso.' : 'Transacao criada com sucesso.',
+          idEmEdicao ? 'Transação atualizada com sucesso.' : 'Transação criada com sucesso.',
         );
         this.transacoesStore.definirEmEdicao(null);
         this.listar();
       },
       error: (erro: unknown) => {
         this.transacoesStore.definirErro(
-          extrairMensagemErroTransacao(erro, 'Nao foi possivel salvar a transacao.'),
+          extrairMensagemErroTransacao(erro, 'Não foi possível salvar a transação.'),
         );
       },
     });
@@ -144,12 +144,12 @@ export class PaginaTransacoes {
       .pipe(finalize(() => this.transacoesStore.definirCarregando(false)))
       .subscribe({
         next: () => {
-          this.transacoesStore.definirSucesso('Transacao excluida com sucesso.');
+          this.transacoesStore.definirSucesso('Transação excluída com sucesso.');
           this.listar();
         },
         error: (erro: unknown) => {
           this.transacoesStore.definirErro(
-            extrairMensagemErroTransacao(erro, 'Nao foi possivel excluir a transacao.'),
+            extrairMensagemErroTransacao(erro, 'Não foi possível excluir a transação.'),
           );
         },
       });
@@ -190,7 +190,7 @@ export class PaginaTransacoes {
         },
         error: (erro: unknown) => {
           this.transacoesStore.definirErro(
-            extrairMensagemErroTransacao(erro, 'Nao foi possivel carregar as transacoes.'),
+            extrairMensagemErroTransacao(erro, 'Não foi possível carregar as transações.'),
           );
         },
       });

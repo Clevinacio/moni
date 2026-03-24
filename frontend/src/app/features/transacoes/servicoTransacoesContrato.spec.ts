@@ -66,7 +66,7 @@ describe('RF02 - Contrato do ServicoTransacoes futuro (TDD RED)', () => {
     const suporte = await criarSuporteServicoTransacoes();
 
     const promessaResposta = firstValueFrom(suporte.servico.listar());
-    const requisicao = suporte.controladorHttp.expectOne(endpointTransacoes);
+    const requisicao = esperarRequisicaoPorCaminho(suporte.controladorHttp, endpointTransacoes);
 
     expect(requisicao.request.method).toBe('GET');
     expect(requisicao.request.params.keys().length).toBe(0);
@@ -89,7 +89,7 @@ describe('RF02 - Contrato do ServicoTransacoes futuro (TDD RED)', () => {
 
     const requisicao = suporte.controladorHttp.expectOne(
       (valor) =>
-        valor.url === endpointTransacoes &&
+        extrairCaminhoUrl(valor.url) === endpointTransacoes &&
         valor.params.get('dataInicio') === '2026-03-01' &&
         valor.params.get('dataFim') === '2026-03-31',
     );
@@ -116,7 +116,7 @@ describe('RF02 - Contrato do ServicoTransacoes futuro (TDD RED)', () => {
 
     const requisicao = suporte.controladorHttp.expectOne(
       (valor) =>
-        valor.url === endpointTransacoes &&
+        extrairCaminhoUrl(valor.url) === endpointTransacoes &&
         valor.params.get('mes') === '3' &&
         valor.params.get('ano') === '2026',
     );
@@ -136,7 +136,7 @@ describe('RF02 - Contrato do ServicoTransacoes futuro (TDD RED)', () => {
     const payload = construirPayloadTransacaoValido();
 
     const promessaResposta = firstValueFrom(suporte.servico.criar(payload));
-    const requisicao = suporte.controladorHttp.expectOne(endpointTransacoes);
+    const requisicao = esperarRequisicaoPorCaminho(suporte.controladorHttp, endpointTransacoes);
 
     expect(requisicao.request.method).toBe('POST');
     expect(requisicao.request.body).toEqual(payload);
@@ -160,7 +160,10 @@ describe('RF02 - Contrato do ServicoTransacoes futuro (TDD RED)', () => {
     const payload = construirPayloadTransacaoValido();
 
     const promessaResposta = firstValueFrom(suporte.servico.atualizar('tx-01', payload));
-    const requisicao = suporte.controladorHttp.expectOne(`${endpointTransacoes}/tx-01`);
+    const requisicao = esperarRequisicaoPorCaminho(
+      suporte.controladorHttp,
+      `${endpointTransacoes}/tx-01`,
+    );
 
     expect(requisicao.request.method).toBe('PUT');
     expect(requisicao.request.body).toEqual(payload);
@@ -179,7 +182,10 @@ describe('RF02 - Contrato do ServicoTransacoes futuro (TDD RED)', () => {
     const suporte = await criarSuporteServicoTransacoes();
 
     const promessaResposta = firstValueFrom(suporte.servico.excluir('tx-02'));
-    const requisicao = suporte.controladorHttp.expectOne(`${endpointTransacoes}/tx-02`);
+    const requisicao = esperarRequisicaoPorCaminho(
+      suporte.controladorHttp,
+      `${endpointTransacoes}/tx-02`,
+    );
 
     expect(requisicao.request.method).toBe('DELETE');
     requisicao.flush(null, { status: 204, statusText: 'No Content' });
@@ -198,7 +204,7 @@ describe('RF02 - Contrato do ServicoTransacoes futuro (TDD RED)', () => {
     );
 
     const requisicao = suporte.controladorHttp.expectOne(
-      (valor) => valor.url === endpointTransacoes && valor.method === 'GET',
+      (valor) => extrairCaminhoUrl(valor.url) === endpointTransacoes && valor.method === 'GET',
     );
 
     requisicao.flush(
@@ -219,7 +225,7 @@ describe('RF02 - Contrato do ServicoTransacoes futuro (TDD RED)', () => {
     const suporte = await criarSuporteServicoTransacoes();
 
     const promessa = firstValueFrom(suporte.servico.listar());
-    const requisicao = suporte.controladorHttp.expectOne(endpointTransacoes);
+    const requisicao = esperarRequisicaoPorCaminho(suporte.controladorHttp, endpointTransacoes);
 
     requisicao.flush(
       {
@@ -241,7 +247,10 @@ describe('RF02 - Contrato do ServicoTransacoes futuro (TDD RED)', () => {
     const promessa = firstValueFrom(
       suporte.servico.atualizar('tx-03', construirPayloadTransacaoValido()),
     );
-    const requisicao = suporte.controladorHttp.expectOne(`${endpointTransacoes}/tx-03`);
+    const requisicao = esperarRequisicaoPorCaminho(
+      suporte.controladorHttp,
+      `${endpointTransacoes}/tx-03`,
+    );
 
     requisicao.flush(
       {
@@ -261,7 +270,10 @@ describe('RF02 - Contrato do ServicoTransacoes futuro (TDD RED)', () => {
     const suporte = await criarSuporteServicoTransacoes();
 
     const promessa = firstValueFrom(suporte.servico.excluir('tx-404'));
-    const requisicao = suporte.controladorHttp.expectOne(`${endpointTransacoes}/tx-404`);
+    const requisicao = esperarRequisicaoPorCaminho(
+      suporte.controladorHttp,
+      `${endpointTransacoes}/tx-404`,
+    );
 
     requisicao.flush(
       {
@@ -494,6 +506,21 @@ function ehRegistro(valor: unknown): valor is Record<string, unknown> {
 
 function temPropriedadePropria(valor: unknown, chave: string): boolean {
   return ehRegistro(valor) && Object.prototype.hasOwnProperty.call(valor, chave);
+}
+
+function esperarRequisicaoPorCaminho(
+  controladorHttp: HttpTestingController,
+  caminhoEsperado: string,
+) {
+  return controladorHttp.expectOne((requisicao) => extrairCaminhoUrl(requisicao.url) === caminhoEsperado);
+}
+
+function extrairCaminhoUrl(url: string): string {
+  try {
+    return new URL(url, 'http://localhost').pathname;
+  } catch {
+    return url;
+  }
 }
 
 async function capturarFalha(promessa: Promise<unknown>): Promise<unknown> {

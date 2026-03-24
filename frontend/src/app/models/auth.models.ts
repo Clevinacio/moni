@@ -20,4 +20,5 @@ export type RespostaLogin = Readonly<{
   token: string;
   type: string;
   userId: string;
+  name: string;
 }>;

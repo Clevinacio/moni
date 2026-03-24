@@ -6,6 +6,9 @@ export default {
   ],
   theme: {
     extend: {
+      screens: {
+        tablet: '720px',
+      },
       fontFamily: {
         sans: ['Inter', /* fallback */ 'sans-serif'],
       },

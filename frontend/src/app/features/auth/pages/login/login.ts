@@ -6,6 +6,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { PayloadLogin } from '../../../../models/auth.models';
@@ -39,6 +40,7 @@ export class PaginaLogin {
   private readonly construtorFormulario = inject(NonNullableFormBuilder);
   private readonly servicoAutenticacao = inject(ServicoAutenticacao);
   private readonly authStore = inject(AuthStore);
+  private readonly roteador = inject(Router);
 
   readonly carregando = signal(false);
   readonly mensagemErro = signal<string | null>(null);
@@ -72,15 +74,17 @@ export class PaginaLogin {
           this.authStore.definirSessao({
             token: resposta.token,
             userId: resposta.userId,
+            nome: resposta.name,
           });
 
           this.mensagemSucesso.set('Login realizado com sucesso.');
+          void this.roteador.navigate(['/painel']).catch(() => undefined);
         },
         error: (erro: unknown) => {
           this.mensagemErro.set(
             extrairMensagemErroAutenticacao(
               erro,
-              'Nao foi possivel autenticar com os dados informados.',
+              'Não foi possível autenticar com os dados informados.',
             ),
           );
         },

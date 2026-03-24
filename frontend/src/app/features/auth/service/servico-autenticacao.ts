@@ -44,7 +44,7 @@ export class ServicoAutenticacao {
 
 function validarRespostaCadastro(valor: unknown): RespostaCadastro {
   if (!ehRegistro(valor)) {
-    throw new Error('Resposta de cadastro invalida: esperado objeto JSON.');
+    throw new Error('Resposta de cadastro inválida: esperado objeto JSON.');
   }
 
   validarCamposEstritos(valor, ['id', 'name', 'email', 'token'], 'cadastro');
@@ -52,7 +52,7 @@ function validarRespostaCadastro(valor: unknown): RespostaCadastro {
   const { id, name, email, token } = valor;
 
   if (!ehTexto(id) || !ehTexto(name) || !ehTexto(email) || !ehTexto(token)) {
-    throw new Error('Resposta de cadastro invalida: campos obrigatorios ausentes ou invalidos.');
+    throw new Error('Resposta de cadastro inválida: campos obrigatórios ausentes ou inválidos.');
   }
 
   return { id, name, email, token };
@@ -60,20 +60,20 @@ function validarRespostaCadastro(valor: unknown): RespostaCadastro {
 
 function validarRespostaLogin(valor: unknown): RespostaLogin {
   if (!ehRegistro(valor)) {
-    throw new Error('Resposta de autenticacao invalida: esperado objeto JSON.');
+    throw new Error('Resposta de autenticação inválida: esperado objeto JSON.');
   }
 
-  validarCamposEstritos(valor, ['token', 'type', 'userId'], 'autenticacao');
+  validarCamposEstritos(valor, ['token', 'type', 'userId', 'name'], 'autenticação');
 
-  const { token, type, userId } = valor;
+  const { token, type, userId, name } = valor;
 
-  if (!ehTexto(token) || !ehTexto(type) || !ehTexto(userId)) {
+  if (!ehTexto(token) || !ehTexto(type) || !ehTexto(userId) || !ehTexto(name)) {
     throw new Error(
-      'Resposta de autenticacao invalida: campos obrigatorios ausentes ou invalidos.',
+      'Resposta de autenticação inválida: campos obrigatórios ausentes ou inválidos.',
     );
   }
 
-  return { token, type, userId };
+  return { token, type, userId, name };
 }
 
 function validarCamposEstritos(
@@ -89,7 +89,7 @@ function validarCamposEstritos(
     chavesAtuais.every((chave, indice) => chave === chavesEsperadas[indice]);
 
   if (!contratoValido) {
-    throw new Error(`Resposta de ${contexto} invalida: formato de campos inesperado.`);
+    throw new Error(`Resposta de ${contexto} inválida: formato de campos inesperado.`);
   }
 }
 
@@ -105,19 +105,13 @@ function normalizarPrefixoApi(apiUrl: string): string {
   const urlSemBarraFinal = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
 
   try {
-    new URL(urlSemBarraFinal);
+    const url = new URL(urlSemBarraFinal);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      throw new Error('protocolo inválido');
+    }
+
     return urlSemBarraFinal;
   } catch {
-    return normalizarCaminhoRelativo(urlSemBarraFinal);
+    throw new Error('Configuração inválida: environment.apiUrl deve ser uma URL absoluta.');
   }
-}
-
-function normalizarCaminhoRelativo(caminho: string): string {
-  const caminhoComBarraInicial = caminho.startsWith('/') ? caminho : `/${caminho}`;
-
-  if (caminhoComBarraInicial.length > 1 && caminhoComBarraInicial.endsWith('/')) {
-    return caminhoComBarraInicial.slice(0, -1);
-  }
-
-  return caminhoComBarraInicial;
 }

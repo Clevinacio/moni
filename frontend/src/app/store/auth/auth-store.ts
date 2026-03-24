@@ -12,7 +12,7 @@ export class AuthStore {
   readonly sessao = signal<SessaoAutenticacao | null>(this.sessaoStorage.carregar());
   readonly autenticado = computed(() => this.sessao() !== null);
   readonly descricaoSessao = computed(
-    () => this.sessao()?.email ?? this.sessao()?.userId ?? this.sessao()?.nome ?? 'usuario',
+    () => this.sessao()?.nome ?? this.sessao()?.email ?? this.sessao()?.userId ?? 'usuario',
   );
 
   definirSessao(sessao: SessaoAutenticacao): void {

@@ -1,81 +1,45 @@
-<section
-  aria-labelledby="titulo-cadastro"
-  class="mx-auto w-full max-w-md rounded-2xl border border-brand-light/50 bg-gradient-to-b from-brand-light/20 to-white p-6 shadow-[0_10px_35px_rgba(53,88,114,0.10)]"
->
-  <app-cabecalho-auth
-    identificadorTitulo="titulo-cadastro"
-    titulo="Criar conta"
-    descricao="Gerencie seu fluxo de caixa com seguranca."
-  >
+<section aria-labelledby="titulo-cadastro"
+  class="mx-auto w-full max-w-md rounded-2xl border border-brand-light/50 bg-gradient-to-b from-brand-light/20 to-white p-6 shadow-[0_10px_35px_rgba(53,88,114,0.10)]">
+  <app-cabecalho-auth identificadorTitulo="titulo-cadastro" titulo="Criar conta"
+    descricao="Gerencie seu fluxo de caixa com segurança.">
   </app-cabecalho-auth>
 
   <form [formGroup]="formulario" (ngSubmit)="onSubmit()" novalidate class="grid gap-4">
-    <app-input-formulario
-      id="name"
-      rotulo="Nome"
-      tipo="text"
-      autocomplete="name"
-      ajuda="Digite seu nome completo."
-      [invalido]="campoInvalido('name')"
-      [controle]="formulario.controls.name"
-      [mensagensErro]="{ required: 'Nome e obrigatorio.' }"
-    />
+    <app-input-formulario id="name" rotulo="Nome" tipo="text" autocomplete="name" ajuda="Digite seu nome completo."
+      [invalido]="campoInvalido('name')" [controle]="formulario.controls.name"
+      [mensagensErro]="{ required: 'Nome é obrigatório.' }" />
 
-    <app-input-formulario
-      id="email"
-      rotulo="E-mail"
-      tipo="email"
-      autocomplete="email"
-      ajuda="Use um e-mail valido."
-      [invalido]="campoInvalido('email')"
-      [controle]="formulario.controls.email"
-      [mensagensErro]="{ required: 'E-mail e obrigatorio.', email: 'Formato de e-mail invalido.' }"
-    />
+    <app-input-formulario id="email" rotulo="E-mail" tipo="email" autocomplete="email" ajuda="Use um e-mail válido."
+      [invalido]="campoInvalido('email')" [controle]="formulario.controls.email"
+      [mensagensErro]="{ required: 'E-mail é obrigatório.', email: 'Formato de e-mail inválido.' }" />
 
-    <app-input-formulario
-      id="password"
-      rotulo="Senha"
-      tipo="password"
-      autocomplete="new-password"
-      ajuda="Use pelo menos 8 caracteres."
-      [invalido]="campoInvalido('password')"
-      [controle]="formulario.controls.password"
-      [mensagensErro]="{
-        required: 'Senha e obrigatoria.',
-        minlength: 'Senha deve ter no minimo 8 caracteres.',
-      }"
-    />
+    <app-input-formulario id="password" rotulo="Senha" tipo="password" autocomplete="new-password"
+      ajuda="Use pelo menos 8 caracteres." [invalido]="campoInvalido('password')"
+      [controle]="formulario.controls.password" [mensagensErro]="{
+        required: 'Senha é obrigatória.',
+        minlength: 'Senha deve ter no mínimo 8 caracteres.',
+      }" />
 
-    <app-botao-submit
-      rotuloPadrao="Criar conta"
-      rotuloCarregando="Enviando..."
-      [carregando]="carregando()"
-      [desabilitado]="formulario.invalid"
-    />
+    <app-botao-submit rotuloPadrao="Criar conta" rotuloCarregando="Enviando..." [carregando]="carregando()"
+      [desabilitado]="formulario.invalid" />
   </form>
 
   @if (temMensagemSucesso()) {
-    <p
-      class="mt-4 rounded-xl border border-brand-light bg-background px-3 py-2 text-sm font-semibold text-brand-dark"
-      role="status"
-      aria-live="polite"
-    >
-      {{ mensagemSucesso() }}
-    </p>
+  <p class="mt-4 rounded-xl border border-brand-light bg-background px-3 py-2 text-sm font-semibold text-brand-dark"
+    role="status" aria-live="polite">
+    {{ mensagemSucesso() }}
+  </p>
   }
 
   @if (temMensagemErro()) {
-    <p
-      class="mt-4 rounded-xl border border-error/30 bg-error/10 px-3 py-2 text-sm font-semibold text-error"
-      role="alert"
-      aria-live="assertive"
-    >
-      {{ mensagemErro() }}
-    </p>
+  <p class="mt-4 rounded-xl border border-error/30 bg-error/10 px-3 py-2 text-sm font-semibold text-error" role="alert"
+    aria-live="assertive">
+    {{ mensagemErro() }}
+  </p>
   }
 
   <p class="mt-4 text-sm text-brand-dark/75">
-    Ja possui cadastro?
+    Já possui cadastro?
     <a href="/auth/login" class="font-bold text-brand underline-offset-2 hover:underline">Entrar</a>
   </p>
 </section>

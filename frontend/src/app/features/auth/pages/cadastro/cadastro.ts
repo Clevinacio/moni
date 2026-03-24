@@ -6,6 +6,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { PayloadCadastro } from '../../../../models/auth.models';
@@ -40,6 +41,7 @@ export class PaginaCadastro {
   private readonly construtorFormulario = inject(NonNullableFormBuilder);
   private readonly servicoAutenticacao = inject(ServicoAutenticacao);
   private readonly authStore = inject(AuthStore);
+  private readonly roteador = inject(Router);
 
   readonly carregando = signal(false);
   readonly mensagemErro = signal<string | null>(null);
@@ -79,12 +81,13 @@ export class PaginaCadastro {
           });
 
           this.mensagemSucesso.set('Cadastro realizado com sucesso.');
+          void this.roteador.navigate(['/painel']).catch(() => undefined);
         },
         error: (erro: unknown) => {
           this.mensagemErro.set(
             extrairMensagemErroAutenticacao(
               erro,
-              'Nao foi possivel concluir seu cadastro no momento.',
+              'Não foi possível concluir seu cadastro no momento.',
             ),
           );
         },

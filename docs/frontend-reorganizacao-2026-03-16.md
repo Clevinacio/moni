@@ -96,3 +96,76 @@ Isso evita regressao no ambiente Vitest sem servidor HTTP para assets.
 - ng g guard core/guards/auth --skip-tests
 - ng g interceptor core/interceptors/auth-token --skip-tests
 - ng g service store/auth/auth-store --skip-tests
+
+## Atualizacao 2026-03-24
+
+### Navegacao e painel central
+
+- Rota protegida principal consolidada em `/painel`.
+- Compatibilidade mantida para caminho legado `/auth/painel` com redirecionamento para `/painel`.
+- Fluxo pos-autenticacao atualizado para redirecionar automaticamente:
+	- Login concluido com sucesso -> `/painel`
+	- Cadastro concluido com sucesso -> `/painel`
+- Painel evoluido para hub central com:
+	- Funcionalidades atuais: Painel inicial, Transacoes, Resumo inicial
+	- Funcionalidades futuras: Metas, Faturas, Notificacoes (estado "Em breve")
+	- Acao de sair com limpeza de sessao e navegacao para login
+
+### Responsividade e acessibilidade
+
+- Breakpoint adicional de `720px` adicionado no Tailwind (`tablet`) para melhor distribuicao horizontal em desktop.
+- Containers principais ampliados para ocupar maior largura horizontal em telas maiores.
+- Lista de transacoes em desktop reforcada com regiao rolavel acessivel:
+	- `role="region"`
+	- `aria-label` descritivo
+	- `tabindex="0"` para foco por teclado
+- Filtros de transacoes com rotulos e `aria-label` mais claros.
+
+### Padronizacao PT-BR
+
+- Idioma do documento atualizado para `pt-BR` em `frontend/src/index.html`.
+- Revisao de nomenclatura e acentuacao aplicada nas telas principais:
+	- autenticacao
+	- painel
+	- inicial
+	- transacoes (pagina, filtros e lista)
+	- nao-encontrada
+- Mensagens de erro/sucesso em componentes e servicos ajustadas para PT-BR correto.
+
+### Validacao
+
+- Build executado com sucesso: `npm run build`.
+- Testes automatizados nao executados neste ciclo, pois a execucao foi pulada no ambiente atual.
+
+## Atualizacao 2026-03-24 (Redesign do Painel)
+
+### Escopo aplicado
+
+- A rota `/painel` foi redesenhada para refletir os prototipos desktop e mobile com alta fidelidade visual.
+- O layout passou a ter:
+	- Sidebar lateral no desktop com navegacao principal.
+	- Topbar com saudacao e atalho de notificacoes.
+	- Barra inferior fixa no mobile.
+	- Cards principais de saldo, receitas, despesas, gastos por categoria, metas e contas pendentes.
+- As cores e nomenclaturas foram mantidas dentro do padrao oficial (`brand`, `brand-dark`, `brand-light`, `background`).
+
+### Dados exibidos
+
+- Bloco financeiro (saldo, receitas e despesas): dados reais agregados a partir de `ServicoTransacoes#listar`.
+- Bloco "Meus Gastos": distribuicao de despesas por categoria com grafico donut via `conic-gradient` (sem biblioteca externa).
+- Blocos "Metas" e "Proximas Contas": dados mock controlados para aproximacao visual ao prototipo, conforme decisao de escopo.
+
+### Acessibilidade e responsividade
+
+- Mantidos estados de foco visivel (`focus-visible:outline-*`) e alvos de toque com altura minima adequada.
+- Composicao mobile-first com adaptacao para `tablet` e `lg`.
+- Estrutura semantica com `header`, `nav`, `aside`, mensagens com `role` e `aria-live`.
+
+### Testes e validacao
+
+- Novo teste de contrato para o painel:
+	- `frontend/src/app/features/auth/paginaPainelContrato.spec.ts`
+	- Cobertura de calculo de saldo/receitas/despesas e total pendente mock.
+- Execucoes realizadas:
+	- `npm run test` -> 7 arquivos de teste, 41 testes passando.
+	- `npm run build` -> build concluido com sucesso.
