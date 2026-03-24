@@ -1,16 +1,19 @@
- package com.moni.configuration;
+package com.moni.configuration;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Objects;
 
+import com.moni.configuration.exception.AcessoNegadoException;
 import com.moni.configuration.exception.CredenciaisInvalidasException;
 import com.moni.configuration.exception.EmailJaCadastradoException;
+import com.moni.configuration.exception.TransacaoNaoEncontradaException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -53,6 +56,26 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(CredenciaisInvalidasException.class)
 	public ResponseEntity<ErroApiResponse> tratarCredenciaisInvalidas(CredenciaisInvalidasException exception) {
 		return resposta(HttpStatus.UNAUTHORIZED, exception.getMessage());
+	}
+
+	@ExceptionHandler(AcessoNegadoException.class)
+	public ResponseEntity<ErroApiResponse> tratarAcessoNegado(AcessoNegadoException exception) {
+		return resposta(HttpStatus.FORBIDDEN, exception.getMessage());
+	}
+
+	@ExceptionHandler(TransacaoNaoEncontradaException.class)
+	public ResponseEntity<ErroApiResponse> tratarTransacaoNaoEncontrada(TransacaoNaoEncontradaException exception) {
+		return resposta(HttpStatus.NOT_FOUND, exception.getMessage());
+	}
+
+	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
+	public ResponseEntity<ErroApiResponse> tratarParametroInvalido(MethodArgumentTypeMismatchException exception) {
+		return resposta(HttpStatus.BAD_REQUEST, "Parametro de requisicao invalido.");
+	}
+
+	@ExceptionHandler(IllegalArgumentException.class)
+	public ResponseEntity<ErroApiResponse> tratarRegraNegocioInvalida(IllegalArgumentException exception) {
+		return resposta(HttpStatus.BAD_REQUEST, exception.getMessage());
 	}
 
 	private ResponseEntity<ErroApiResponse> resposta(HttpStatus status, String mensagem) {

@@ -21,6 +21,11 @@ export const routes: Routes = [
     redirectTo: 'auth/painel',
   },
   {
+    path: 'transacoes',
+    loadChildren: () =>
+      import('./features/transacoes/transacoes.routes').then((modulo) => modulo.transacoesRoutes),
+  },
+  {
     path: '**',
     loadChildren: () =>
       import('./features/nao-encontrada/nao-encontrada.routes').then(

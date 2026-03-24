@@ -3,6 +3,7 @@ package com.moni.configuration;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
+import java.util.UUID;
 
 import javax.crypto.SecretKey;
 
@@ -36,5 +37,16 @@ public class JwtService {
 				.expiration(Date.from(expiraEm))
 				.signWith(chaveAssinatura)
 				.compact();
+	}
+
+	public UUID extrairUsuarioId(String token) {
+		String subject = Jwts.parser()
+				.verifyWith(chaveAssinatura)
+				.build()
+				.parseSignedClaims(token)
+				.getPayload()
+				.getSubject();
+
+		return UUID.fromString(subject);
 	}
 }

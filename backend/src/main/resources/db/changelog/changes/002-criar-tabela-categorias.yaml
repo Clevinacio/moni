@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-criar-tabela-categorias
+      author: cleverton
+      changes:
+        - createTable:
+            tableName: categorias
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_categorias
+              - column:
+                  name: nome
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: usuario_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: categorias
+            baseColumnNames: usuario_id
+            referencedTableName: usuarios
+            referencedColumnNames: id
+            constraintName: fk_categorias_usuario
+            onDelete: CASCADE
+        - addUniqueConstraint:
+            tableName: categorias
+            columnNames: usuario_id, nome
+            constraintName: uk_categorias_usuario_nome

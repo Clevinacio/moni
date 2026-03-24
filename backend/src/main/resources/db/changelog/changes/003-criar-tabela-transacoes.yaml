@@ -1,0 +1,66 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-criar-tabela-transacoes
+      author: cleverton
+      changes:
+        - createTable:
+            tableName: transacoes
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_transacoes
+              - column:
+                  name: descricao
+                  type: VARCHAR(180)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: valor
+                  type: NUMERIC(19,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: data
+                  type: DATE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: tipo
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: categoria_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: usuario_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: transacoes
+            baseColumnNames: categoria_id
+            referencedTableName: categorias
+            referencedColumnNames: id
+            constraintName: fk_transacoes_categoria
+        - addForeignKeyConstraint:
+            baseTableName: transacoes
+            baseColumnNames: usuario_id
+            referencedTableName: usuarios
+            referencedColumnNames: id
+            constraintName: fk_transacoes_usuario
+            onDelete: CASCADE
+        - createIndex:
+            tableName: transacoes
+            indexName: idx_transacoes_usuario_data
+            columns:
+              - column:
+                  name: usuario_id
+              - column:
+                  name: data
