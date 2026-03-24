@@ -1,72 +1,41 @@
-<section
-  aria-labelledby="titulo-login"
-  class="mx-auto w-full max-w-md rounded-2xl border border-brand-light/50 bg-gradient-to-b from-brand-light/20 to-white p-6 shadow-[0_10px_35px_rgba(53,88,114,0.10)]"
->
-  <app-cabecalho-auth
-    identificadorTitulo="titulo-login"
-    titulo="Entrar"
-    descricao="Acesse seus dados financeiros com seguranca."
-  >
+<section aria-labelledby="titulo-login"
+  class="mx-auto w-full max-w-md rounded-2xl border border-brand-light/50 bg-linear-to-b from-brand-light/20 to-white p-6 shadow-[0_10px_35px_rgba(53,88,114,0.10)]">
+  <app-cabecalho-auth identificadorTitulo="titulo-login" titulo="Entrar"
+    descricao="Acesse seus dados financeiros com seguranca.">
   </app-cabecalho-auth>
 
   <form [formGroup]="formulario" (ngSubmit)="onSubmit()" novalidate class="grid gap-4">
-    <app-input-formulario
-      id="email"
-      rotulo="E-mail"
-      tipo="email"
-      autocomplete="email"
-      ajuda="Informe o e-mail cadastrado."
-      [invalido]="campoInvalido('email')"
-      [controle]="formulario.controls.email"
-      [mensagensErro]="{ required: 'E-mail e obrigatorio.', email: 'Formato de e-mail invalido.' }"
-    />
+    <app-input-formulario id="email" rotulo="E-mail" tipo="email" autocomplete="email"
+      ajuda="Informe o e-mail cadastrado." [invalido]="campoInvalido('email')" [controle]="formulario.controls.email"
+      [mensagensErro]="{ required: 'E-mail e obrigatorio.', email: 'Formato de e-mail invalido.' }" />
 
-    <app-input-formulario
-      id="password"
-      rotulo="Senha"
-      tipo="password"
-      autocomplete="current-password"
-      ajuda="Senha com no minimo 8 caracteres."
-      [invalido]="campoInvalido('password')"
-      [controle]="formulario.controls.password"
-      [mensagensErro]="{
+    <app-input-formulario id="password" rotulo="Senha" tipo="password" autocomplete="current-password"
+      ajuda="Senha com no minimo 8 caracteres." [invalido]="campoInvalido('password')"
+      [controle]="formulario.controls.password" [mensagensErro]="{
         required: 'Senha e obrigatoria.',
         minlength: 'Senha deve ter no minimo 8 caracteres.',
-      }"
-    />
+      }" />
 
-    <app-botao-submit
-      rotuloPadrao="Acessar conta"
-      rotuloCarregando="Entrando..."
-      [carregando]="carregando()"
-      [desabilitado]="formulario.invalid"
-    />
+    <app-botao-submit rotuloPadrao="Acessar conta" rotuloCarregando="Entrando..." [carregando]="carregando()"
+      [desabilitado]="formulario.invalid" />
   </form>
 
   @if (temMensagemSucesso()) {
-    <p
-      class="mt-4 rounded-xl border border-brand-light bg-background px-3 py-2 text-sm font-semibold text-brand-dark"
-      role="status"
-      aria-live="polite"
-    >
-      {{ mensagemSucesso() }}
-    </p>
+  <p class="mt-4 rounded-xl border border-brand-light bg-background px-3 py-2 text-sm font-semibold text-brand-dark"
+    role="status" aria-live="polite">
+    {{ mensagemSucesso() }}
+  </p>
   }
 
   @if (temMensagemErro()) {
-    <p
-      class="mt-4 rounded-xl border border-error/30 bg-error/10 px-3 py-2 text-sm font-semibold text-error"
-      role="alert"
-      aria-live="assertive"
-    >
-      {{ mensagemErro() }}
-    </p>
+  <p class="mt-4 rounded-xl border border-error/30 bg-error/10 px-3 py-2 text-sm font-semibold text-error" role="alert"
+    aria-live="assertive">
+    {{ mensagemErro() }}
+  </p>
   }
 
   <p class="mt-4 text-sm text-brand-dark/75">
     Ainda nao tem conta?
-    <a href="/auth/cadastro" class="font-bold text-brand underline-offset-2 hover:underline"
-      >Criar cadastro</a
-    >
+    <a href="/auth/cadastro" class="font-bold text-brand underline-offset-2 hover:underline">Criar conta</a>
   </p>
 </section>

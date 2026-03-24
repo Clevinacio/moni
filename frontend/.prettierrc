@@ -1,12 +1,8 @@
 {
-  "printWidth": 100,
-  "singleQuote": true,
-  "overrides": [
-    {
-      "files": "*.html",
-      "options": {
-        "parser": "angular"
-      }
-    }
-  ]
+  "plugins": ["prettier-plugin-tailwindcss"],
+  "tailwindConfig": "./tailwind.config.js",
+  "semi": true,
+  "tabWidth": 2,
+  "printWidth": 80,
+  "trailingComma": "es5"
 }

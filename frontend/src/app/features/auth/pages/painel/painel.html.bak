@@ -1,0 +1,22 @@
+<section aria-labelledby="titulo-painel"
+  class="border-brand-light/50 mx-auto w-full max-w-2xl rounded-2xl border bg-white p-6 shadow-[0_10px_30px_rgba(53,88,114,0.08)]">
+  <h2 id="titulo-painel" class="text-brand-dark mt-1 text-[clamp(1.4rem,3vw,1.8rem)] font-semibold">
+    Area autenticada
+  </h2>
+  <p class="text-brand-dark/75 m-0 text-sm leading-relaxed">
+    Esta tela confirma que o login foi concluido. As proximas RFs adicionarao dashboard, transacoes
+    e notificacoes.
+  </p>
+
+  @if (temSessao()) {
+  <p class="border-brand-light  text-brand-dark my-4 bg-background rounded-lg border px-3 py-2 text-sm font-semibold"
+    role="status" aria-live="polite">
+    Sessao ativa para {{ descricaoSessao() }}.
+  </p>
+  }
+
+  <a href="/auth/login" (click)="sair()"
+    class="bg-brand-dark inline-flex text-background rounded-lg px-4 py-2 text-sm font-semibold hover:brightness-110">
+    Sair
+  </a>
+</section>
