@@ -9,24 +9,28 @@ export const routes: Routes = [
     redirectTo: 'auth/login',
   },
   {
-    path: 'inicio',
-    loadChildren: () =>
-      import('./features/inicial/inicial.routes').then((modulo) => modulo.inicialRoutes),
-  },
-  {
     path: 'auth',
     loadChildren: () => import('./features/auth/auth.routes').then((modulo) => modulo.authRoutes),
   },
   {
-    path: 'painel',
+    path: '',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/auth/pages/painel/painel').then((modulo) => modulo.PaginaPainel),
-  },
-  {
-    path: 'transacoes',
-    loadChildren: () =>
-      import('./features/transacoes/transacoes.routes').then((modulo) => modulo.transacoesRoutes),
+      import('./shared/components/shell-autenticado/shell-autenticado').then(
+        (modulo) => modulo.ShellAutenticadoComponent,
+      ),
+    children: [
+      {
+        path: 'painel',
+        loadComponent: () =>
+          import('./features/auth/pages/painel/painel').then((modulo) => modulo.PaginaPainel),
+      },
+      {
+        path: 'transacoes',
+        loadChildren: () =>
+          import('./features/transacoes/transacoes.routes').then((modulo) => modulo.transacoesRoutes),
+      },
+    ],
   },
   {
     path: '**',

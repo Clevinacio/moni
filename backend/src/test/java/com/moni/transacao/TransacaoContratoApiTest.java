@@ -37,6 +37,7 @@ class TransacaoContratoApiTest {
     private static final String caminhoCadastro = "/api/v1/auth/register";
     private static final String caminhoLogin = "/api/v1/auth/login";
     private static final String caminhoTransacoes = "/api/v1/transactions";
+    private static final String caminhoCategorias = "/api/v1/categories";
     private static final TypeReference<Map<String, Object>> tipoMapaJson = new TypeReference<>() {
     };
 
@@ -58,7 +59,9 @@ class TransacaoContratoApiTest {
                   "valor": 4500.00,
                   "data": "2026-03-20",
                   "tipo": "RECEITA",
-                  "categoria": "Trabalho"
+                                    "categoria": {
+                                        "nome": "Trabalho"
+                                    }
                 }
                 """;
 
@@ -86,8 +89,30 @@ class TransacaoContratoApiTest {
                 {
                   "descricao": "Mercado",
                   "valor": 150.50,
-                  "tipo": "DESPESA",
-                  "categoria": "Alimentacao"
+                                    "tipo": "DESPESA"
+                }
+                """;
+
+        HttpResponse<String> resposta = enviarPostJsonAutenticado(caminhoTransacoes, payload, token);
+
+        assertContratoErroPadrao(resposta, 400);
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/transactions deve rejeitar categoria com id e nome simultaneos")
+    void deveRejeitarCriacaoQuandoCategoriaPossuiIdENomeAoMesmoTempo() throws Exception {
+        String token = registrarELogarRetornandoToken();
+
+        String payload = """
+                {
+                    "descricao": "Mercado",
+                    "valor": 150.50,
+                    "data": "2026-03-20",
+                    "tipo": "DESPESA",
+                    "categoria": {
+                        "id": "6ee64b31-4050-4b4e-bf6a-0ed14e714d8d",
+                        "nome": "Alimentacao"
+                    }
                 }
                 """;
 
@@ -139,6 +164,73 @@ class TransacaoContratoApiTest {
     }
 
     @Test
+    @DisplayName("GET /api/v1/transactions deve filtrar por categoria")
+    void deveFiltrarTransacoesPorCategoria() throws Exception {
+        String token = registrarELogarRetornandoToken();
+
+        String idTransacaoTrabalho = criarTransacao(token, "Freelance", "RECEITA", "Trabalho", "2026-03-10",
+                "1000.00");
+        criarTransacao(token, "Mercado", "DESPESA", "Alimentacao", "2026-03-11", "200.00");
+
+        String idCategoriaTrabalho = buscarCategoriaIdDaTransacao(token, idTransacaoTrabalho);
+
+        HttpResponse<String> resposta = enviarGetAutenticado(
+                caminhoTransacoes + "?categoriaId=" + idCategoriaTrabalho,
+                token);
+        assertEquals(200, resposta.statusCode());
+        assertCabecalhoJson(resposta);
+
+        var lista = objectMapper.readTree(resposta.body());
+        assertTrue(lista.isArray(), "A resposta deve ser uma lista JSON.");
+        assertTrue(lista.size() >= 1, "A lista filtrada deve conter transacoes da categoria selecionada.");
+        for (var item : lista) {
+            assertEquals("Trabalho", item.get("categoria").asText());
+        }
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/transactions deve filtrar por mes, ano e categoria")
+    void deveFiltrarTransacoesPorMesAnoECategoria() throws Exception {
+        String token = registrarELogarRetornandoToken();
+
+        String idTransacaoTrabalhoMarco = criarTransacao(
+                token,
+                "Freelance Marco",
+                "RECEITA",
+                "Trabalho",
+                "2026-03-10",
+                "1000.00");
+        criarTransacao(token, "Freelance Abril", "RECEITA", "Trabalho", "2026-04-10", "1000.00");
+        criarTransacao(token, "Mercado", "DESPESA", "Alimentacao", "2026-03-11", "200.00");
+
+        String idCategoriaTrabalho = buscarCategoriaIdDaTransacao(token, idTransacaoTrabalhoMarco);
+
+        HttpResponse<String> resposta = enviarGetAutenticado(
+                caminhoTransacoes + "?mes=3&ano=2026&categoriaId=" + idCategoriaTrabalho,
+                token);
+        assertEquals(200, resposta.statusCode());
+        assertCabecalhoJson(resposta);
+
+        var lista = objectMapper.readTree(resposta.body());
+        assertTrue(lista.isArray(), "A resposta deve ser uma lista JSON.");
+        assertTrue(lista.size() >= 1, "A lista filtrada deve conter transacoes da categoria e mes selecionados.");
+        for (var item : lista) {
+            assertEquals("Trabalho", item.get("categoria").asText());
+            assertTrue(item.get("data").asText().startsWith("2026-03"), "A data deve pertencer a marco de 2026.");
+        }
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/transactions deve retornar 400 quando categoriaId for invalido")
+    void deveRetornar400QuandoCategoriaIdForInvalido() throws Exception {
+        String token = registrarELogarRetornandoToken();
+
+        HttpResponse<String> resposta = enviarGetAutenticado(caminhoTransacoes + "?categoriaId=abc", token);
+
+        assertContratoErroPadrao(resposta, 400);
+    }
+
+    @Test
     @DisplayName("PUT /api/v1/transactions/{id} deve atualizar transacao do proprio usuario")
     void deveAtualizarTransacaoDoProprioUsuario() throws Exception {
         String token = registrarELogarRetornandoToken();
@@ -150,7 +242,9 @@ class TransacaoContratoApiTest {
                   "valor": 130.00,
                   "data": "2026-03-16",
                   "tipo": "DESPESA",
-                  "categoria": "Casa"
+                                    "categoria": {
+                                        "nome": "Casa"
+                                    }
                 }
                 """;
 
@@ -176,7 +270,9 @@ class TransacaoContratoApiTest {
                   "valor": 250.00,
                   "data": "2026-03-15",
                   "tipo": "DESPESA",
-                  "categoria": "Cartao"
+                                    "categoria": {
+                                        "nome": "Cartao"
+                                    }
                 }
                 """;
 
@@ -200,6 +296,72 @@ class TransacaoContratoApiTest {
         assertContratoErroPadrao(segundaExclusao, 404);
     }
 
+    @Test
+    @DisplayName("PUT /api/v1/transactions/{id} deve aceitar categoria existente por id")
+    void deveAtualizarTransacaoComCategoriaExistentePorId() throws Exception {
+        String token = registrarELogarRetornandoToken();
+        String idTransacao = criarTransacao(token, "Academia", "DESPESA", "Saude", "2026-03-10", "100.00");
+
+        String idTransacaoReferencia = criarTransacao(token, "Consulta", "DESPESA", "Saude", "2026-03-11", "200.00");
+        String idCategoriaSaude = buscarCategoriaIdDaTransacao(token, idTransacaoReferencia);
+
+        String payloadAtualizacao = """
+                {
+                    "descricao": "Academia Premium",
+                    "valor": 120.00,
+                    "data": "2026-03-12",
+                    "tipo": "DESPESA",
+                    "categoria": {
+                        "id": "%s"
+                    }
+                }
+                """.formatted(idCategoriaSaude);
+
+        HttpResponse<String> resposta = enviarPutJsonAutenticado(
+                caminhoTransacoes + "/" + idTransacao,
+                payloadAtualizacao,
+                token);
+
+        assertEquals(200, resposta.statusCode());
+        assertCabecalhoJson(resposta);
+
+        Map<String, Object> corpo = lerJsonComoMapa(resposta.body());
+        assertEquals("Academia Premium", corpo.get("descricao"));
+        assertEquals("Saude", corpo.get("categoria"));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/transactions deve rejeitar categoria id de outro usuario")
+    void deveRejeitarCriacaoComCategoriaIdDeOutroUsuario() throws Exception {
+        String tokenUsuarioA = registrarELogarRetornandoToken();
+        String tokenUsuarioB = registrarELogarRetornandoToken();
+
+        String idTransacaoUsuarioA = criarTransacao(
+                tokenUsuarioA,
+                "Supermercado",
+                "DESPESA",
+                "Alimentacao",
+                "2026-03-12",
+                "250.00");
+        String idCategoriaUsuarioA = buscarCategoriaIdDaTransacao(tokenUsuarioA, idTransacaoUsuarioA);
+
+        String payload = """
+                {
+                    "descricao": "Assinatura",
+                    "valor": 39.90,
+                    "data": "2026-03-20",
+                    "tipo": "DESPESA",
+                    "categoria": {
+                        "id": "%s"
+                    }
+                }
+                """.formatted(idCategoriaUsuarioA);
+
+        HttpResponse<String> resposta = enviarPostJsonAutenticado(caminhoTransacoes, payload, tokenUsuarioB);
+
+        assertContratoErroPadrao(resposta, 403);
+    }
+
     private String criarTransacao(String token, String descricao, String tipo, String categoria, String data,
             String valor)
             throws Exception {
@@ -209,7 +371,9 @@ class TransacaoContratoApiTest {
                   "valor": %s,
                   "data": "%s",
                   "tipo": "%s",
-                  "categoria": "%s"
+                                    "categoria": {
+                                        "nome": "%s"
+                                    }
                 }
                 """.formatted(descricao, valor, data, tipo, categoria);
 
@@ -218,6 +382,36 @@ class TransacaoContratoApiTest {
 
         Map<String, Object> corpo = lerJsonComoMapa(resposta.body());
         return String.valueOf(corpo.get("id"));
+    }
+
+    private String buscarCategoriaIdDaTransacao(String token, String idTransacao) throws Exception {
+        HttpResponse<String> respostaTransacoes = enviarGetAutenticado(caminhoTransacoes, token);
+        assertEquals(200, respostaTransacoes.statusCode());
+
+        String nomeCategoria = null;
+        var listaTransacoes = objectMapper.readTree(respostaTransacoes.body());
+        for (var item : listaTransacoes) {
+            if (idTransacao.equals(item.get("id").asText())) {
+                nomeCategoria = item.get("categoria").asText();
+                break;
+            }
+        }
+
+        if (nomeCategoria == null) {
+            throw new IllegalStateException("Nao foi possivel localizar a transacao informada para extrair categoria.");
+        }
+
+        HttpResponse<String> resposta = enviarGetAutenticado(caminhoCategorias, token);
+        assertEquals(200, resposta.statusCode());
+
+        var lista = objectMapper.readTree(resposta.body());
+        for (var item : lista) {
+            if (nomeCategoria.equals(item.get("nome").asText())) {
+                return item.get("id").asText();
+            }
+        }
+
+        throw new IllegalStateException("Nao foi possivel localizar a categoria da transacao informada.");
     }
 
     private String registrarELogarRetornandoToken() throws Exception {

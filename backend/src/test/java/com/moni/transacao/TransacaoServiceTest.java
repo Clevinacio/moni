@@ -9,12 +9,14 @@ import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
 import com.moni.configuration.exception.AcessoNegadoException;
 import com.moni.configuration.exception.TransacaoNaoEncontradaException;
+import com.moni.dto.CategoriaTransacaoRequest;
 import com.moni.dto.CriarTransacaoRequest;
 import com.moni.dto.TransacaoResponse;
 import com.moni.entity.Categoria;
@@ -70,7 +72,7 @@ class TransacaoServiceTest {
                 new BigDecimal("3000.00"),
                 LocalDate.of(2026, 3, 20),
                 TipoTransacao.RECEITA,
-                "Trabalho");
+                new CategoriaTransacaoRequest(null, "Trabalho"));
 
         TransacaoResponse respostaEsperada = new TransacaoResponse(
                 transacaoSalva.getId().toString(),
@@ -114,7 +116,7 @@ class TransacaoServiceTest {
                 new BigDecimal("120.00"),
                 LocalDate.of(2026, 3, 16),
                 TipoTransacao.DESPESA,
-                "Casa");
+                new CategoriaTransacaoRequest(null, "Casa"));
 
         assertThrows(AcessoNegadoException.class,
                 () -> transacaoService.atualizar(autenticacao, transacaoId, requisicao));
@@ -131,6 +133,115 @@ class TransacaoServiceTest {
 
         assertThrows(TransacaoNaoEncontradaException.class,
                 () -> transacaoService.excluir(autenticacao, transacaoId));
+    }
+
+    @Test
+    @DisplayName("deve criar transacao com categoria existente por id")
+    void deveCriarTransacaoComCategoriaExistentePorId() {
+        UUID usuarioId = UUID.randomUUID();
+        Authentication autenticacao = autenticacao(usuarioId);
+        Usuario usuario = usuarioComId(usuarioId);
+        Categoria categoria = categoriaComId("Moradia", usuario);
+        UUID categoriaId = categoria.getId();
+        Transacao transacaoSalva = transacaoComId(usuario, categoria, "Aluguel");
+
+        CriarTransacaoRequest requisicao = new CriarTransacaoRequest(
+                "Aluguel",
+                new BigDecimal("1500.00"),
+                LocalDate.of(2026, 3, 20),
+                TipoTransacao.DESPESA,
+                new CategoriaTransacaoRequest(categoriaId.toString(), null));
+
+        TransacaoResponse respostaEsperada = new TransacaoResponse(
+                transacaoSalva.getId().toString(),
+                "Aluguel",
+                new BigDecimal("1500.00"),
+                LocalDate.of(2026, 3, 20),
+                TipoTransacao.DESPESA,
+                "Moradia");
+
+        when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
+        when(categoriaRepository.findByIdAndUsuarioId(categoriaId, usuarioId)).thenReturn(Optional.of(categoria));
+        when(transacaoRepository.save(any(Transacao.class))).thenReturn(transacaoSalva);
+        when(transacaoMapper.paraResponse(transacaoSalva)).thenReturn(respostaEsperada);
+
+        TransacaoResponse resposta = transacaoService.criar(autenticacao, requisicao);
+
+        assertEquals(respostaEsperada, resposta);
+        verify(categoriaRepository).findByIdAndUsuarioId(categoriaId, usuarioId);
+        verify(transacaoRepository).save(any(Transacao.class));
+    }
+
+    @Test
+    @DisplayName("deve rejeitar categoria por id quando categoria nao pertence ao usuario autenticado")
+    void deveRejeitarCategoriaIdDeOutroUsuario() {
+        UUID usuarioId = UUID.randomUUID();
+        UUID categoriaId = UUID.randomUUID();
+        Authentication autenticacao = autenticacao(usuarioId);
+        Usuario usuario = usuarioComId(usuarioId);
+
+        CriarTransacaoRequest requisicao = new CriarTransacaoRequest(
+                "Investimento",
+                new BigDecimal("250.00"),
+                LocalDate.of(2026, 3, 20),
+                TipoTransacao.RECEITA,
+                new CategoriaTransacaoRequest(categoriaId.toString(), null));
+
+        when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
+        when(categoriaRepository.findByIdAndUsuarioId(categoriaId, usuarioId)).thenReturn(Optional.empty());
+
+        assertThrows(AcessoNegadoException.class, () -> transacaoService.criar(autenticacao, requisicao));
+    }
+
+    @Test
+    @DisplayName("deve listar transacoes filtrando por mes, ano e categoria")
+    void deveListarTransacoesFiltrandoPorMesAnoECategoria() {
+        UUID usuarioId = UUID.randomUUID();
+        UUID categoriaId = UUID.randomUUID();
+        Authentication autenticacao = autenticacao(usuarioId);
+        Usuario usuario = usuarioComId(usuarioId);
+        Categoria categoria = categoriaComId("Trabalho", usuario);
+        Transacao transacao = transacaoComId(usuario, categoria, "Freelance");
+        ReflectionTestUtils.setField(categoria, "id", categoriaId);
+
+        when(transacaoRepository.findByUsuarioIdAndCategoriaIdAndDataBetweenOrderByDataDesc(
+                eq(usuarioId),
+                eq(categoriaId),
+                eq(LocalDate.of(2026, 3, 1)),
+                eq(LocalDate.of(2026, 3, 31))))
+                .thenReturn(List.of(transacao));
+        when(transacaoMapper.paraResponses(List.of(transacao))).thenReturn(List.of(new TransacaoResponse(
+                transacao.getId().toString(),
+                transacao.getDescricao(),
+                transacao.getValor(),
+                transacao.getData(),
+                transacao.getTipo(),
+                categoria.getNome())));
+
+        List<TransacaoResponse> resposta = transacaoService.listar(
+                autenticacao,
+                null,
+                null,
+                3,
+                2026,
+                categoriaId.toString());
+
+        assertEquals(1, resposta.size());
+        verify(transacaoRepository).findByUsuarioIdAndCategoriaIdAndDataBetweenOrderByDataDesc(
+                usuarioId,
+                categoriaId,
+                LocalDate.of(2026, 3, 1),
+                LocalDate.of(2026, 3, 31));
+    }
+
+    @Test
+    @DisplayName("deve rejeitar listagem quando categoriaId for invalido")
+    void deveRejeitarListagemQuandoCategoriaIdForInvalido() {
+        UUID usuarioId = UUID.randomUUID();
+        Authentication autenticacao = autenticacao(usuarioId);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> transacaoService.listar(autenticacao, null, null, null, null, "abc"));
     }
 
     private Authentication autenticacao(UUID usuarioId) {

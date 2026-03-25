@@ -33,9 +33,10 @@ public class TransacaoController implements TransacaoEndpoints {
 
     @Override
     public ResponseEntity<List<TransacaoResponse>> listar(LocalDate dataInicio, LocalDate dataFim, Integer mes,
-            Integer ano) {
+            Integer ano, String categoriaId) {
         Authentication autenticacao = obterAutenticacao();
-        List<TransacaoResponse> resposta = transacaoService.listar(autenticacao, dataInicio, dataFim, mes, ano);
+        List<TransacaoResponse> resposta = transacaoService.listar(autenticacao, dataInicio, dataFim, mes, ano,
+                categoriaId);
         return ResponseEntity.ok(resposta);
     }
 

@@ -9,6 +9,7 @@ import com.moni.configuration.exception.AcessoNegadoException;
 import com.moni.configuration.exception.CredenciaisInvalidasException;
 import com.moni.configuration.exception.TransacaoNaoEncontradaException;
 import com.moni.dto.AtualizarTransacaoRequest;
+import com.moni.dto.CategoriaTransacaoRequest;
 import com.moni.dto.CriarTransacaoRequest;
 import com.moni.dto.TransacaoResponse;
 import com.moni.entity.Categoria;
@@ -53,21 +54,43 @@ public class TransacaoService {
     @Transactional(readOnly = true)
     public List<TransacaoResponse> listar(Authentication autenticacao, LocalDate dataInicio, LocalDate dataFim,
             Integer mes,
-            Integer ano) {
+            Integer ano, String categoriaId) {
         UUID usuarioId = extrairUsuarioId(autenticacao);
         validarFiltros(dataInicio, dataFim, mes, ano);
+        UUID categoriaUuid = converterCategoriaIdOpcional(categoriaId);
 
         List<Transacao> transacoes;
         if (dataInicio != null) {
-            transacoes = transacaoRepository.findByUsuarioIdAndDataBetweenOrderByDataDesc(usuarioId, dataInicio,
-                    dataFim);
+            if (categoriaUuid != null) {
+                transacoes = transacaoRepository.findByUsuarioIdAndCategoriaIdAndDataBetweenOrderByDataDesc(
+                        usuarioId,
+                        categoriaUuid,
+                        dataInicio,
+                        dataFim);
+            } else {
+                transacoes = transacaoRepository.findByUsuarioIdAndDataBetweenOrderByDataDesc(usuarioId, dataInicio,
+                        dataFim);
+            }
         } else if (mes != null) {
             YearMonth anoMes = YearMonth.of(ano, mes);
             LocalDate inicio = anoMes.atDay(1);
             LocalDate fim = anoMes.atEndOfMonth();
-            transacoes = transacaoRepository.findByUsuarioIdAndDataBetweenOrderByDataDesc(usuarioId, inicio, fim);
+            if (categoriaUuid != null) {
+                transacoes = transacaoRepository.findByUsuarioIdAndCategoriaIdAndDataBetweenOrderByDataDesc(
+                        usuarioId,
+                        categoriaUuid,
+                        inicio,
+                        fim);
+            } else {
+                transacoes = transacaoRepository.findByUsuarioIdAndDataBetweenOrderByDataDesc(usuarioId, inicio, fim);
+            }
         } else {
-            transacoes = transacaoRepository.findByUsuarioIdOrderByDataDesc(usuarioId);
+            if (categoriaUuid != null) {
+                transacoes = transacaoRepository.findByUsuarioIdAndCategoriaIdOrderByDataDesc(usuarioId,
+                        categoriaUuid);
+            } else {
+                transacoes = transacaoRepository.findByUsuarioIdOrderByDataDesc(usuarioId);
+            }
         }
 
         return transacaoMapper.paraResponses(transacoes);
@@ -115,11 +138,34 @@ public class TransacaoService {
                 .orElseThrow(() -> new CredenciaisInvalidasException("Usuario autenticado nao encontrado."));
     }
 
-    private Categoria buscarOuCriarCategoria(Usuario usuario, String categoriaInformada) {
-        String categoriaNormalizada = categoriaInformada.trim();
+    private Categoria buscarOuCriarCategoria(Usuario usuario, CategoriaTransacaoRequest categoriaInformada) {
+        if (categoriaInformada == null) {
+            throw new IllegalArgumentException("Categoria e obrigatoria.");
+        }
+
+        if (categoriaInformada.possuiId()) {
+            return buscarCategoriaExistentePorId(usuario.getId(), categoriaInformada.id());
+        }
+
+        String categoriaNormalizada = categoriaInformada.nomeNormalizado();
+        if (categoriaNormalizada == null || categoriaNormalizada.isBlank()) {
+            throw new IllegalArgumentException("Categoria e obrigatoria.");
+        }
 
         return categoriaRepository.findByUsuarioIdAndNomeIgnoreCase(usuario.getId(), categoriaNormalizada)
                 .orElseGet(() -> categoriaRepository.save(new Categoria(categoriaNormalizada, usuario)));
+    }
+
+    private Categoria buscarCategoriaExistentePorId(UUID usuarioId, String categoriaId) {
+        UUID categoriaUuid;
+        try {
+            categoriaUuid = UUID.fromString(categoriaId);
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalArgumentException("Categoria id invalida.");
+        }
+
+        return categoriaRepository.findByIdAndUsuarioId(categoriaUuid, usuarioId)
+                .orElseThrow(() -> new AcessoNegadoException("Acesso negado para esta categoria."));
     }
 
     private UUID extrairUsuarioId(Authentication autenticacao) {
@@ -151,6 +197,18 @@ public class TransacaoService {
 
         if (dataInicio != null && mes != null) {
             throw new IllegalArgumentException("Use filtro por intervalo ou por mes/ano, nao ambos.");
+        }
+    }
+
+    private UUID converterCategoriaIdOpcional(String categoriaId) {
+        if (categoriaId == null || categoriaId.isBlank()) {
+            return null;
+        }
+
+        try {
+            return UUID.fromString(categoriaId);
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalArgumentException("categoriaId invalido.");
         }
     }
 }

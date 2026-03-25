@@ -1,247 +1,159 @@
-<section aria-labelledby="titulo-painel" class="mx-auto w-full max-w-330 pb-24 lg:pb-0">
-  <div class="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
-    <aside
-      class="hidden h-[calc(100dvh-2rem)] min-h-170 rounded-3xl border border-brand-light/50 bg-white p-5 shadow-[0_14px_35px_rgba(53,88,114,0.08)] lg:sticky lg:top-4 lg:grid lg:grid-rows-[auto_1fr_auto]">
-      <header class="border-b border-brand-light/40 pb-4">
-        <p class="m-0 text-lg font-semibold text-brand-dark">Moni</p>
-        <p class="m-0 mt-1 text-[11px] uppercase tracking-[0.12em] text-brand-dark/65">Gestão financeira</p>
-      </header>
-
-      <nav aria-label="Navegação principal" class="mt-5 grid content-start gap-2">
-        @for (item of navegacaoLateral; track item.titulo) {
-        @if (item.rota) {
-        <a [routerLink]="item.rota"
-          class="grid min-h-11 content-center rounded-xl px-3 py-2 text-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-          [class]="item.ativo
-            ? 'grid min-h-11 content-center rounded-xl bg-brand-dark px-3 py-2 text-sm font-semibold text-background transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
-            : 'grid min-h-11 content-center rounded-xl border border-brand-light/50 px-3 py-2 text-sm text-brand-dark transition hover:bg-brand-light/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'">
-          <span>{{ item.titulo }}</span>
-          <span class="text-xs" [class.opacity-80]="item.ativo" [class.text-brand-dark/70]="!item.ativo">
-            {{ item.subtitulo }}
-          </span>
-        </a>
-        } @else {
-        <button type="button" disabled
-          class="grid min-h-11 content-center rounded-xl border border-brand-light/40 bg-background/60 px-3 py-2 text-left text-sm text-brand-dark/60"
-          aria-disabled="true">
-          <span class="font-medium">{{ item.titulo }}</span>
-          <span class="text-xs">{{ item.subtitulo }}</span>
-        </button>
-        }
-        }
-      </nav>
-
-      <footer class="mt-4">
-        <button type="button" (click)="sair()"
-          class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand-dark px-4 py-2 text-sm font-semibold text-background transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-          <lucide-icon [img]="iconePorta" class="size-4" aria-hidden="true"></lucide-icon>
-          Sair
-        </button>
-      </footer>
-    </aside>
-
-    <div class="grid gap-5">
-      <header
-        class="px-1 py-1 sm:px-0 lg:rounded-3xl lg:border lg:border-brand-light/45 lg:bg-white lg:p-5 lg:shadow-[0_12px_28px_rgba(53,88,114,0.08)]">
-        <div
-          class="flex min-h-16 flex-col gap-2 rounded-2xl px-2 py-1 sm:px-3 lg:min-h-0 lg:flex-row lg:items-center lg:justify-between lg:gap-3 lg:rounded-none lg:px-0 lg:py-0">
-          <div class="order-2 min-w-0 lg:order-1">
-            <div class="min-w-0">
-              <h1 id="titulo-painel"
-                class="m-0 wrap-break-word text-[1.75rem] font-semibold leading-tight text-brand-dark sm:text-[1.95rem] lg:text-[2rem]">
-                {{
-                saudacao() }}
-              </h1>
-            </div>
-          </div>
-
-          <div class="order-1 flex w-full shrink-0 items-center justify-end gap-2 lg:order-2 lg:w-auto">
-            <button type="button"
-              class="inline-flex size-11 items-center justify-center rounded-full border border-brand-light/60 bg-white text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand lg:bg-background"
-              aria-label="Notificações">
-              <lucide-icon [img]="iconeNotificacao" class="size-5" aria-hidden="true"></lucide-icon>
-            </button>
-            <button type="button" (click)="sair()"
-              class="inline-flex min-h-11 items-center justify-center gap-1 rounded-full border border-brand-light/60 bg-white px-3 text-xs font-semibold text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand lg:hidden"
-              aria-label="Sair">
-              <lucide-icon [img]="iconeSair" class="size-4" aria-hidden="true"></lucide-icon>
-              Sair
-            </button>
-          </div>
-        </div>
+<section aria-labelledby="titulo-painel" class="grid gap-5">
+    <header
+        class="rounded-3xl border border-brand-light/45 bg-white p-5 shadow-[0_12px_28px_rgba(53,88,114,0.08)] sm:p-6">
+        <h1 id="titulo-painel" class="m-0 text-[1.9rem] font-semibold leading-tight text-brand-dark sm:text-[2rem]">
+            Visão geral do painel
+        </h1>
+        <p class="m-0 mt-2 text-sm text-brand-dark/75">
+            Acompanhe saldo, gastos por categoria, metas e contas pendentes.
+        </p>
 
         @if (mensagemErroResumo()) {
         <p class="mt-4 rounded-xl border border-error/30 bg-error/10 px-3 py-2 text-sm font-semibold text-error"
-          role="alert" aria-live="assertive">
-          {{ mensagemErroResumo() }}
+            role="alert" aria-live="assertive">
+            {{ mensagemErroResumo() }}
         </p>
         }
-      </header>
+    </header>
 
-      <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
+    <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div class="grid gap-5">
-          <article
-            class="rounded-3xl bg-linear-to-r from-brand-dark to-brand p-5 text-background shadow-[0_18px_30px_rgba(53,88,114,0.2)] sm:p-6">
-            <p class="m-0 text-xs font-semibold uppercase tracking-[0.14em] text-background/80">Saldo atual</p>
-            <p class="m-0 mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">
-              {{ formatarMoeda(resumoFinanceiro().saldo) }}
-            </p>
+            <article
+                class="rounded-3xl bg-linear-to-r from-brand-dark to-brand p-5 text-background shadow-[0_18px_30px_rgba(53,88,114,0.2)] sm:p-6">
+                <p class="m-0 text-xs font-semibold uppercase tracking-[0.14em] text-background/80">Saldo atual</p>
+                <p class="m-0 mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">
+                    {{ formatarMoeda(resumoFinanceiro().saldo) }}
+                </p>
 
-            <div class="mt-5 grid gap-3 sm:grid-cols-2">
-              <article class="rounded-2xl border border-background/20 bg-background/12 p-4 backdrop-blur-sm">
-                <p class="m-0 text-[11px] font-semibold uppercase tracking-[0.11em] text-background/75">Receitas</p>
-                <p class="m-0 mt-1 text-3xl font-semibold">{{ formatarMoeda(resumoFinanceiro().receitas) }}</p>
-              </article>
-              <article class="rounded-2xl border border-background/20 bg-background/12 p-4 backdrop-blur-sm">
-                <p class="m-0 text-[11px] font-semibold uppercase tracking-[0.11em] text-background/75">Despesas</p>
-                <p class="m-0 mt-1 text-3xl font-semibold">{{ formatarMoeda(resumoFinanceiro().despesas) }}</p>
-              </article>
-            </div>
-          </article>
-
-          <article
-            class="rounded-3xl border border-brand-light/45 bg-white p-5 shadow-[0_12px_24px_rgba(53,88,114,0.08)] sm:p-6">
-            <header class="flex items-center justify-between gap-3">
-              <h2 class="m-0 text-[1.75rem] font-semibold text-brand-dark">Meus Gastos</h2>
-              <a routerLink="/transacoes"
-                class="text-sm font-semibold text-brand-dark underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                Ver detalhes
-              </a>
-            </header>
-
-            @if (carregandoResumo()) {
-            <p class="m-0 mt-6 rounded-xl border border-brand-light/50 bg-background px-3 py-2 text-sm font-semibold text-brand-dark"
-              role="status" aria-live="polite">
-              Carregando resumo de gastos...
-            </p>
-            } @else {
-            <div class="mt-6 grid gap-6 md:grid-cols-[220px_minmax(0,1fr)] md:items-center">
-              <div class="flex items-center justify-center">
-                <div class="relative size-44 rounded-full" [style.background]="graficoDonutBackground()"
-                  aria-label="Distribuição de despesas por categoria" role="img">
-                  <div class="absolute inset-[1.2rem] grid place-items-center rounded-full bg-white">
-                    <span class="text-center text-sm font-semibold text-brand-dark">
-                      Total
-                      <strong class="block text-xl">100%</strong>
-                    </span>
-                  </div>
+                <div class="mt-5 grid gap-3 sm:grid-cols-2">
+                    <article class="rounded-2xl border border-background/20 bg-background/12 p-4 backdrop-blur-sm">
+                        <p class="m-0 text-[11px] font-semibold uppercase tracking-[0.11em] text-background/75">Receitas
+                        </p>
+                        <p class="m-0 mt-1 text-3xl font-semibold">{{ formatarMoeda(resumoFinanceiro().receitas) }}</p>
+                    </article>
+                    <article class="rounded-2xl border border-background/20 bg-background/12 p-4 backdrop-blur-sm">
+                        <p class="m-0 text-[11px] font-semibold uppercase tracking-[0.11em] text-background/75">Despesas
+                        </p>
+                        <p class="m-0 mt-1 text-3xl font-semibold">{{ formatarMoeda(resumoFinanceiro().despesas) }}</p>
+                    </article>
                 </div>
-              </div>
+            </article>
 
-              @if (categoriasDespesas().length > 0) {
-              <ul class="m-0 grid list-none gap-3 p-0 sm:grid-cols-2">
-                @for (item of categoriasDespesas(); track item.categoria) {
-                <li class="flex items-center justify-between gap-4">
-                  <span class="inline-flex items-center gap-2 text-sm text-brand-dark">
-                    <span class="size-2.5 rounded-full" [style.backgroundColor]="item.cor" aria-hidden="true"></span>
-                    {{ item.categoria }}
-                  </span>
-                  <span class="text-sm font-semibold text-brand-dark">{{ item.percentual }}%</span>
-                </li>
+            <article
+                class="rounded-3xl border border-brand-light/45 bg-white p-5 shadow-[0_12px_24px_rgba(53,88,114,0.08)] sm:p-6">
+                <header class="flex items-center justify-between gap-3">
+                    <h2 class="m-0 text-[1.75rem] font-semibold text-brand-dark">Meus Gastos</h2>
+                    <a routerLink="/transacoes"
+                        class="text-sm font-semibold text-brand-dark underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                        Ver detalhes
+                    </a>
+                </header>
+
+                @if (carregandoResumo()) {
+                <p class="m-0 mt-6 rounded-xl border border-brand-light/50 bg-background px-3 py-2 text-sm font-semibold text-brand-dark"
+                    role="status" aria-live="polite">
+                    Carregando resumo de gastos...
+                </p>
+                } @else {
+                <div class="mt-6 grid gap-6 md:grid-cols-[220px_minmax(0,1fr)] md:items-center">
+                    <div class="flex items-center justify-center">
+                        <div class="relative size-44 rounded-full" [style.background]="graficoDonutBackground()"
+                            aria-label="Distribuição de despesas por categoria" role="img">
+                            <div class="absolute inset-[1.2rem] grid place-items-center rounded-full bg-white">
+                                <span class="text-center text-sm font-semibold text-brand-dark">
+                                    Total
+                                    <strong class="block text-xl">100%</strong>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (categoriasDespesas().length > 0) {
+                    <ul class="m-0 grid list-none gap-3 p-0 sm:grid-cols-2">
+                        @for (item of categoriasDespesas(); track item.categoria) {
+                        <li class="flex items-center justify-between gap-4">
+                            <span class="inline-flex items-center gap-2 text-sm text-brand-dark">
+                                <span class="size-2.5 rounded-full" [style.backgroundColor]="item.cor"
+                                    aria-hidden="true"></span>
+                                {{ item.categoria }}
+                            </span>
+                            <span class="text-sm font-semibold text-brand-dark">{{ item.percentual }}%</span>
+                        </li>
+                        }
+                    </ul>
+                    } @else {
+                    <p class="m-0 text-sm text-brand-dark/75">Cadastre despesas em transações para visualizar o gráfico.
+                    </p>
+                    }
+                </div>
                 }
-              </ul>
-              } @else {
-              <p class="m-0 text-sm text-brand-dark/75">Cadastre despesas em transações para visualizar o gráfico.</p>
-              }
-            </div>
-            }
-          </article>
+            </article>
 
-          <article
-            class="rounded-3xl border border-brand-light/45 bg-white p-5 shadow-[0_12px_24px_rgba(53,88,114,0.08)] sm:p-6">
-            <header class="mb-4 flex items-center justify-between gap-2">
-              <h2 class="m-0 text-[1.75rem] font-semibold text-brand-dark">Metas</h2>
-              <span
-                class="inline-flex rounded-full border border-brand-light bg-brand-light/20 px-3 py-1 text-xs font-semibold text-brand-dark">
-                Demo
-              </span>
-            </header>
+            <article
+                class="rounded-3xl border border-brand-light/45 bg-white p-5 shadow-[0_12px_24px_rgba(53,88,114,0.08)] sm:p-6">
+                <header class="mb-4 flex items-center justify-between gap-2">
+                    <h2 class="m-0 text-[1.75rem] font-semibold text-brand-dark">Metas</h2>
+                    <span
+                        class="inline-flex rounded-full border border-brand-light bg-brand-light/20 px-3 py-1 text-xs font-semibold text-brand-dark">
+                        Demo
+                    </span>
+                </header>
 
-            <div class="grid gap-4">
-              @for (meta of metasMock; track meta.titulo) {
-              <article class="rounded-2xl border border-brand-light/40 bg-background/70 p-4">
-                <div class="flex items-center justify-between gap-3">
-                  <h3 class="m-0 text-2xl font-semibold text-brand-dark">{{ meta.titulo }}</h3>
-                  <span class="inline-flex rounded-full bg-success/20 px-3 py-1 text-xs font-semibold text-success">{{
-                    meta.percentual }}%</span>
+                <div class="grid gap-4">
+                    @for (meta of metasMock; track meta.titulo) {
+                    <article class="rounded-2xl border border-brand-light/40 bg-background/70 p-4">
+                        <div class="flex items-center justify-between gap-3">
+                            <h3 class="m-0 text-2xl font-semibold text-brand-dark">{{ meta.titulo }}</h3>
+                            <span
+                                class="inline-flex rounded-full bg-success/20 px-3 py-1 text-xs font-semibold text-success">{{
+                                meta.percentual }}%</span>
+                        </div>
+                        <p class="m-0 mt-2 text-sm text-brand-dark/75">{{ meta.descricao }}</p>
+                        <div class="mt-3 h-2 rounded-full bg-brand-light/25">
+                            <div class="h-full rounded-full" [class]="meta.corBarra" [style.width.%]="meta.percentual">
+                            </div>
+                        </div>
+                    </article>
+                    }
                 </div>
-                <p class="m-0 mt-2 text-sm text-brand-dark/75">{{ meta.descricao }}</p>
-                <div class="mt-3 h-2 rounded-full bg-brand-light/25">
-                  <div class="h-full rounded-full" [class]="meta.corBarra" [style.width.%]="meta.percentual"></div>
-                </div>
-              </article>
-              }
-            </div>
-          </article>
+            </article>
         </div>
 
         <aside
-          class="rounded-3xl border border-brand-light/45 bg-white p-5 shadow-[0_12px_24px_rgba(53,88,114,0.08)] sm:p-6">
-          <header class="mb-4 flex items-center justify-between gap-3">
-            <h2 class="m-0 text-3xl font-semibold leading-none text-brand-dark">Próximas Contas</h2>
-            <span class="whitespace-nowrap rounded-full bg-error/15 px-3 py-1 text-xs font-semibold text-error">
-              {{ contasPendentesMock.length }} pendentes
-            </span>
-          </header>
+            class="rounded-3xl border border-brand-light/45 bg-white p-5 shadow-[0_12px_24px_rgba(53,88,114,0.08)] sm:p-6">
+            <header class="mb-4 flex items-center justify-between gap-3">
+                <h2 class="m-0 text-3xl font-semibold leading-none text-brand-dark">Próximas Contas</h2>
+                <span class="whitespace-nowrap rounded-full bg-error/15 px-3 py-1 text-xs font-semibold text-error">
+                    {{ contasPendentesMock.length }} pendentes
+                </span>
+            </header>
 
-          <div class="grid gap-3">
-            @for (conta of contasPendentesMock; track conta.titulo) {
-            <article
-              class="grid grid-cols-[1fr_auto] items-center gap-3 rounded-2xl border border-brand-light/45 bg-background/60 p-3">
-              <div>
-                <p class="m-0 text-2xl font-semibold text-brand-dark">{{ conta.titulo }}</p>
-                <p class="m-0 text-xs text-brand-dark/70">{{ conta.vencimento }}</p>
-              </div>
-              <div class="text-right">
-                <p class="m-0 whitespace-nowrap text-2xl font-semibold text-brand-dark">{{ formatarMoeda(conta.valor) }}
-                </p>
-                <button type="button"
-                  class="mt-2 inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-dark px-3 py-2 text-sm font-semibold text-background opacity-85"
-                  disabled aria-disabled="true">
-                  Pagar
-                </button>
-              </div>
-            </article>
-            }
-          </div>
+            <div class="grid gap-3">
+                @for (conta of contasPendentesMock; track conta.titulo) {
+                <article
+                    class="grid grid-cols-[1fr_auto] items-center gap-3 rounded-2xl border border-brand-light/45 bg-background/60 p-3">
+                    <div>
+                        <p class="m-0 text-2xl font-semibold text-brand-dark">{{ conta.titulo }}</p>
+                        <p class="m-0 text-xs text-brand-dark/70">{{ conta.vencimento }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="m-0 whitespace-nowrap text-2xl font-semibold text-brand-dark">{{
+                            formatarMoeda(conta.valor) }}</p>
+                        <button type="button"
+                            class="mt-2 inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-dark px-3 py-2 text-sm font-semibold text-background opacity-85"
+                            disabled aria-disabled="true">
+                            Pagar
+                        </button>
+                    </div>
+                </article>
+                }
+            </div>
 
-          <footer class="mt-5 border-t border-brand-light/40 pt-4 text-right">
-            <p class="m-0 text-xs font-semibold uppercase tracking-[0.12em] text-brand-dark/60">Total pendente</p>
-            <p class="m-0 mt-1 whitespace-nowrap text-3xl font-semibold text-error">{{ formatarMoeda(totalPendente()) }}
-            </p>
-          </footer>
+            <footer class="mt-5 border-t border-brand-light/40 pt-4 text-right">
+                <p class="m-0 text-xs font-semibold uppercase tracking-[0.12em] text-brand-dark/60">Total pendente</p>
+                <p class="m-0 mt-1 whitespace-nowrap text-3xl font-semibold text-error">{{
+                    formatarMoeda(totalPendente()) }}</p>
+            </footer>
         </aside>
-      </div>
     </div>
-  </div>
-
-  <button type="button"
-    class="fixed bottom-28 left-5 z-10 inline-flex size-14 items-center justify-center rounded-2xl bg-brand text-background shadow-[0_10px_20px_rgba(53,88,114,0.25)] lg:hidden"
-    disabled aria-disabled="true" aria-label="Adicionar registro">
-    <lucide-icon [img]="iconeAdicionar" class="size-6" aria-hidden="true"></lucide-icon>
-  </button>
-
-  <nav aria-label="Navegação inferior"
-    class="fixed right-3 bottom-3 left-3 z-20 rounded-3xl border border-brand-light/50 bg-white p-2 shadow-[0_12px_24px_rgba(53,88,114,0.18)] lg:hidden">
-    <ul class="m-0 grid list-none grid-cols-4 gap-1 p-0">
-      @for (item of navegacaoMobile; track item.titulo) {
-      <li>
-        @if (item.rota) {
-        <a [routerLink]="item.rota"
-          class="grid min-h-12 place-items-center rounded-2xl px-2 py-2 text-center transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-          [class]="item.ativo
-            ? 'grid min-h-12 place-items-center rounded-2xl bg-brand-light/30 px-2 py-2 text-center font-semibold text-brand-dark transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
-            : 'grid min-h-12 place-items-center rounded-2xl px-2 py-2 text-center text-brand-dark/75 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'">
-          <span class="text-xs">{{ item.titulo }}</span>
-        </a>
-        } @else {
-        <button type="button" disabled aria-disabled="true"
-          class="grid min-h-12 w-full place-items-center rounded-2xl px-2 py-2 text-center text-xs text-brand-dark/55">
-          {{ item.titulo }}
-        </button>
-        }
-      </li>
-      }
-    </ul>
-  </nav>
 </section>

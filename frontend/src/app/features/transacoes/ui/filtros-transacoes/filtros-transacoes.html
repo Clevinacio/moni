@@ -1,6 +1,29 @@
 <section aria-label="Filtros de transações"
     class="grid gap-4 rounded-xl border border-brand-light/60 bg-background/60 p-4">
-    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-[1fr_1fr_auto] md:items-end">
+    <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <div class="grid gap-1.5">
+            <label for="tipoFiltro" class="text-sm font-semibold text-brand-dark">Tipo</label>
+            <select id="tipoFiltro" [(ngModel)]="tipo" [ngModelOptions]="{ standalone: true }"
+                class="min-h-11 rounded-xl border border-brand-light bg-white px-3 py-2.5 text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                <option value="TODAS">Todas</option>
+                <option value="RECEITA">Receitas</option>
+                <option value="DESPESA">Despesas</option>
+            </select>
+        </div>
+
+        <div class="grid gap-1.5">
+            <label for="categoriaFiltro" class="text-sm font-semibold text-brand-dark">Categoria</label>
+            <select id="categoriaFiltro" [(ngModel)]="categoriaId" [ngModelOptions]="{ standalone: true }"
+                class="min-h-11 rounded-xl border border-brand-light bg-white px-3 py-2.5 text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                <option value="">Todas as categorias</option>
+                @for (categoria of categorias; track categoria.id) {
+                <option [value]="categoria.id">{{ categoria.nome }}</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 md:items-end">
         <div class="grid gap-1.5">
             <label for="dataInicioFiltro" class="text-sm font-semibold text-brand-dark">Data início</label>
             <input id="dataInicioFiltro" type="date" [(ngModel)]="dataInicio" [ngModelOptions]="{ standalone: true }"
@@ -12,34 +35,23 @@
             <input id="dataFimFiltro" type="date" [(ngModel)]="dataFim" [ngModelOptions]="{ standalone: true }"
                 class="min-h-11 rounded-xl border border-brand-light bg-white px-3 py-2.5 text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand" />
         </div>
-
-        <button type="button" [disabled]="carregando" (click)="aplicarPeriodo()" aria-label="Filtrar por período"
-            class="min-h-11 rounded-xl border border-brand-dark bg-brand-dark px-4 py-2 text-sm font-semibold text-white transition hover:brightness-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-70 sm:col-span-2 md:col-span-1">
-            Filtrar período
-        </button>
     </div>
 
-    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto_auto] md:items-end">
-        <div class="grid gap-1.5">
-            <label for="mesFiltro" class="text-sm font-semibold text-brand-dark">Mês</label>
-            <input id="mesFiltro" type="number" min="1" max="12" [(ngModel)]="mes"
-                [ngModelOptions]="{ standalone: true }"
-                class="min-h-11 rounded-xl border border-brand-light bg-white px-3 py-2.5 text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand" />
-        </div>
+    @if (periodoIncompleto) {
+    <p id="aviso-periodo-incompleto" class="m-0 text-xs font-semibold text-error" role="alert" aria-live="polite">
+        {{ mensagemPeriodoInvalido }}
+    </p>
+    }
 
-        <div class="grid gap-1.5">
-            <label for="anoFiltro" class="text-sm font-semibold text-brand-dark">Ano</label>
-            <input id="anoFiltro" type="number" min="2000" [(ngModel)]="ano" [ngModelOptions]="{ standalone: true }"
-                class="min-h-11 rounded-xl border border-brand-light bg-white px-3 py-2.5 text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand" />
-        </div>
-
-        <button type="button" [disabled]="carregando" (click)="aplicarMensal()" aria-label="Filtrar por mês e ano"
-            class="min-h-11 rounded-xl border border-brand px-4 py-2 text-sm font-semibold text-brand-dark transition hover:bg-brand-light/35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-70 lg:w-auto">
-            Filtrar mês
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-[auto_auto] md:justify-end md:items-end">
+        <button type="button" [disabled]="carregando || !podeAplicar" (click)="onAplicar()" aria-label="Filtrar"
+            [attr.aria-describedby]="ariaDescricaoPeriodo"
+            class="min-h-11 rounded-xl border border-brand-dark bg-brand-dark px-4 py-2 text-sm font-semibold text-white transition hover:brightness-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-70">
+            Filtrar
         </button>
 
-        <button type="button" [disabled]="carregando" (click)="limparFiltros()"
-            class="min-h-11 rounded-xl border border-brand-light px-4 py-2 text-sm font-semibold text-brand-dark transition hover:bg-brand-light/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-70 lg:w-auto">
+        <button type="button" [disabled]="carregando || !podeLimpar" (click)="limparFiltros()"
+            class="min-h-11 rounded-xl border border-brand-light px-4 py-2 text-sm font-semibold text-brand-dark transition hover:bg-brand-light/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-70">
             Limpar
         </button>
     </div>

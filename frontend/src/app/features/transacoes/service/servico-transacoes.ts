@@ -48,12 +48,16 @@ export class ServicoTransacoes {
 }
 
 function normalizarPayload(payload: PayloadTransacao): PayloadTransacao {
+  const categoria = payload.categoria.id
+    ? { id: payload.categoria.id }
+    : { nome: payload.categoria.nome };
+
   return {
     descricao: payload.descricao,
     valor: payload.valor,
     data: payload.data,
     tipo: payload.tipo,
-    categoria: payload.categoria,
+    categoria,
   };
 }
 
@@ -64,12 +68,19 @@ function construirParamsFiltros(filtros?: FiltrosTransacao): HttpParams {
     return params;
   }
 
-  if ('dataInicio' in filtros) {
+  if (filtros.categoriaId) {
+    params = params.set('categoriaId', filtros.categoriaId);
+  }
+
+  if (filtros.dataInicio && filtros.dataFim) {
     return params.set('dataInicio', filtros.dataInicio).set('dataFim', filtros.dataFim);
   }
 
-  params = params.set('mes', String(filtros.mes));
-  return params.set('ano', String(filtros.ano));
+  if (typeof filtros.mes === 'number' && typeof filtros.ano === 'number') {
+    return params.set('mes', String(filtros.mes)).set('ano', String(filtros.ano));
+  }
+
+  return params;
 }
 
 function validarListaTransacoes(valor: unknown): Transacao[] {

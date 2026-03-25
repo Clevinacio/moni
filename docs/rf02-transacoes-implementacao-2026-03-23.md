@@ -248,3 +248,284 @@ Regra respeitada:
 3. `npm run build`
 
 - Resultado: build Angular concluido com sucesso.
+
+---
+
+# Atualizacao Frontend RF02 - 2026-03-24
+
+## Objetivo da atualizacao
+
+Evoluir a experiencia visual das features autenticadas com foco em transacoes, mantendo o contrato funcional e os dados existentes.
+
+## Mudancas implementadas
+
+1. Shell autenticado compartilhado para painel e transacoes
+
+- Desktop: menu lateral + barra superior unificados
+- Mobile: barra superior + navegacao inferior unificadas
+- Rotas cobertas nesta etapa: `/painel` e `/transacoes`
+
+2. Reorganizacao do painel
+
+- Pagina de painel passou a conter apenas conteudo especifico da feature
+- Menu lateral, topo e navegacao inferior foram extraidos para o shell compartilhado
+- Remocao do botao flutuante global de adicionar registro
+
+3. Rework da tela de transacoes
+
+- Layout atualizado para ficar proximo aos prototipos, preservando paleta atual
+- Inclusao de filtros visuais por tipo (Todos, Receitas, Despesas) no frontend
+- Lista reestruturada em grupos por data (Hoje, Ontem ou data formatada)
+- Cartoes com hierarquia visual aprimorada e icones Lucide por contexto
+
+## Atualizacao Backend + Frontend RF02 - 2026-03-24 (Categoria reutilizavel)
+
+### Objetivo
+
+Permitir que a categoria de uma transacao seja:
+
+- selecionada entre categorias ja existentes do usuario, ou
+- criada como nova no mesmo formulario de transacao.
+
+Regra obrigatoria: nunca salvar transacao sem categoria.
+
+### Contrato atualizado de transacoes
+
+Base: `/api/v1/transactions`
+
+Payload de `POST` e `PUT`:
+
+- `descricao`
+- `valor`
+- `data`
+- `tipo`
+- `categoria` (objeto)
+  - modo existente: `{ "id": "uuid" }`
+  - modo nova: `{ "nome": "Nova Categoria" }`
+
+Regras de validacao:
+
+- `categoria` e obrigatoria.
+- Deve conter exatamente um entre `id` ou `nome`.
+- `id` de categoria de outro usuario retorna `403`.
+
+Resposta de transacao permanece:
+
+- `id`, `descricao`, `valor`, `data`, `tipo`, `categoria` (nome da categoria)
+
+### Novo endpoint de categorias
+
+Base: `/api/v1/categories`
+
+1. `GET /api/v1/categories`
+
+- Status: `200 OK`
+- Lista somente categorias do usuario autenticado
+- Contrato de resposta:
+  - `id`
+  - `nome`
+
+### Implementacao backend
+
+Arquivos principais:
+
+- `backend/src/main/java/com/moni/dto/CategoriaTransacaoRequest.java`
+- `backend/src/main/java/com/moni/dto/CriarTransacaoRequest.java`
+- `backend/src/main/java/com/moni/dto/AtualizarTransacaoRequest.java`
+- `backend/src/main/java/com/moni/dto/CategoriaResponse.java`
+- `backend/src/main/java/com/moni/controller/CategoriaEndpoints.java`
+- `backend/src/main/java/com/moni/controller/CategoriaController.java`
+- `backend/src/main/java/com/moni/service/CategoriaService.java`
+- `backend/src/main/java/com/moni/service/TransacaoService.java`
+- `backend/src/main/java/com/moni/entity/CategoriaRepository.java`
+
+### Implementacao frontend
+
+Arquivos principais:
+
+- `frontend/src/app/models/transacao.models.ts`
+- `frontend/src/app/features/transacoes/service/servico-transacoes.ts`
+- `frontend/src/app/features/transacoes/service/servico-categorias.ts`
+- `frontend/src/app/features/transacoes/pages/transacoes/transacoes.ts`
+- `frontend/src/app/features/transacoes/pages/transacoes/transacoes.html`
+
+Comportamento de UI no formulario de transacao:
+
+- Campo de categoria em `select` (dropdown) por padrao.
+- Botao `Nova categoria` ao lado do dropdown.
+- Ao alternar, o dropdown vira input de texto obrigatorio no mesmo formulario.
+- Ao salvar com sucesso, categorias sao recarregadas para reutilizacao imediata.
+
+### Testes e validacao executados
+
+Backend:
+
+- `mvnw -f backend/pom.xml test -Dtest=TransacaoServiceTest,TransacaoContratoApiTest,CategoriaContratoApiTest`
+  - Resultado: `17` testes, `0` falhas.
+
+Frontend:
+
+- `cd frontend && npm run test`
+  - Resultado: `42` testes, `0` falhas.
+- `cd frontend && npm run build`
+  - Resultado: build concluido com sucesso.
+
+Build backend:
+
+- `mvnw -f backend/pom.xml -DskipTests compile`
+  - Resultado: sucesso.
+
+4. Acao de adicionar transacao dentro da feature
+
+- Botao de desktop: "Adicionar transacao" no cabecalho da pagina
+- Botao mobile: "+" flutuante exclusivo da tela de transacoes
+
+5. Modal de formulario de transacao
+
+- Formulario de criacao/edicao movido para modal (desktop e mobile)
+- Mesmas validacoes, mesmos metodos e mesmo payload da implementacao original
+- Fluxo de editar item abre o modal ja preenchido
+
+6. Filtros em modal no mobile
+
+- Desktop: filtros permanecem inline
+- Mobile: filtros abrem em modal dedicado
+- Ambos reutilizam os mesmos handlers (`aplicarFiltroPeriodo`, `aplicarFiltroMensal`, `limparFiltros`)
+
+## Arquivos principais alterados
+
+- `frontend/src/app/shared/components/shell-autenticado/shell-autenticado.ts`
+- `frontend/src/app/shared/components/shell-autenticado/shell-autenticado.html`
+- `frontend/src/app/app.routes.ts`
+- `frontend/src/app/features/auth/pages/painel/painel.ts`
+- `frontend/src/app/features/auth/pages/painel/painel.html`
+- `frontend/src/app/features/transacoes/transacoes.routes.ts`
+- `frontend/src/app/features/transacoes/pages/transacoes/transacoes.ts`
+- `frontend/src/app/features/transacoes/pages/transacoes/transacoes.html`
+- `frontend/src/app/features/transacoes/ui/lista-transacoes/lista-transacoes.ts`
+- `frontend/src/app/features/transacoes/ui/lista-transacoes/lista-transacoes.html`
+
+## Validacao da atualizacao
+
+1. `npm run test`
+
+- Resultado: 41/41 testes frontend em verde.
+
+## Refinamentos visuais e de navegacao (2026-03-24 - etapa 2)
+
+1. Transacoes
+
+- Filtros de tipo (Todos, Receitas, Despesas) movidos para o bloco de filtros.
+- Layout mobile ajustado para card mais compacto e hierarquia visual mais proxima do prototipo.
+- Layout desktop reestruturado para formato tabular com colunas (Descricao, Categoria, Data, Valor, Acoes).
+- Paginacao funcional local adicionada na visao desktop (anterior, proxima e numeros de pagina).
+- Mantido contrato funcional da pagina (metodos de criar, editar, excluir e filtros).
+
+2. Shell autenticado
+
+- Menu lateral desktop ajustado para permanecer fixo durante scroll da pagina.
+- Card de saudacao no topo desktop com espaco interno reduzido para remover area vazia abaixo do conteudo.
+- Largura util desktop ampliada para melhor uso de telas grandes.
+
+3. Navegacao
+
+- Remocao completa do Resumo Inicial:
+  - item removido da navegacao lateral
+  - rota `/inicio` removida
+  - arquivos da feature `inicial` removidos
+
+## Atualizacao RF02 - Filtro por categoria (2026-03-24)
+
+### Objetivo
+
+Adicionar filtro por categoria na listagem de transacoes, com suporte completo frontend + backend e combinacao com filtros ja existentes.
+
+### Contrato atualizado de listagem
+
+`GET /api/v1/transactions`
+
+Filtros opcionais suportados:
+
+- `dataInicio` + `dataFim`
+- `mes` + `ano`
+- `categoriaId`
+
+Combinacoes validas:
+
+- `categoriaId` isolado
+- `categoriaId` + `dataInicio/dataFim`
+- `categoriaId` + `mes/ano`
+
+Comportamento:
+
+- `categoriaId` invalido (nao UUID) retorna `400`.
+- `categoriaId` valido sem transacoes para o usuario retorna lista vazia.
+
+### Implementacao backend
+
+Arquivos alterados:
+
+- `backend/src/main/java/com/moni/controller/TransacaoEndpoints.java`
+- `backend/src/main/java/com/moni/controller/TransacaoController.java`
+- `backend/src/main/java/com/moni/service/TransacaoService.java`
+- `backend/src/main/java/com/moni/entity/TransacaoRepository.java`
+- `backend/src/test/java/com/moni/transacao/TransacaoContratoApiTest.java`
+- `backend/src/test/java/com/moni/transacao/TransacaoServiceTest.java`
+
+### Implementacao frontend
+
+Arquivos alterados:
+
+- `frontend/src/app/models/transacao.models.ts`
+- `frontend/src/app/features/transacoes/service/servico-transacoes.ts`
+- `frontend/src/app/features/transacoes/ui/filtros-transacoes/filtros-transacoes.ts`
+- `frontend/src/app/features/transacoes/ui/filtros-transacoes/filtros-transacoes.html`
+- `frontend/src/app/features/transacoes/pages/transacoes/transacoes.ts`
+- `frontend/src/app/features/transacoes/pages/transacoes/transacoes.html`
+- `frontend/src/app/features/transacoes/servicoTransacoesContrato.spec.ts`
+- `frontend/src/app/features/transacoes/paginaTransacoesContrato.spec.ts`
+
+### Validacao executada nesta atualizacao
+
+Frontend:
+
+- `npm run test` em `frontend` com sucesso (`46` testes, `0` falhas).
+
+Backend:
+
+- `./mvnw -Dtest=TransacaoServiceTest test` com sucesso (`7` testes, `0` falhas).
+- `./mvnw test` permanece com falha por problema preexistente de contexto (`No qualifying bean of type 'com.moni.mapper.AutenticacaoMapper'`), nao relacionado a esta alteracao de filtro.
+
+## Atualizacao RF02 - Unificacao da filtragem (2026-03-24)
+
+### Objetivo
+
+Simplificar a experiencia de filtragem na tela de transacoes, reduzindo a quantidade de acoes e centralizando os controles em um unico bloco reutilizavel.
+
+### Mudancas implementadas
+
+- O filtro de tipo (`Todas`, `Receitas`, `Despesas`) foi movido para dentro do componente de filtros como dropdown.
+- Os filtros de data foram simplificados para manter apenas `dataInicio` e `dataFim`.
+- Foram removidos os botoes individuais de filtragem (categoria, periodo e mes/ano).
+- A tela passou a ter apenas dois botoes de acao no bloco de filtros:
+  - `Filtrar`: aplica os filtros preenchidos.
+  - `Limpar`: limpa todos os campos, reseta o tipo para `TODAS` e recarrega a listagem completa sem filtros.
+- O comportamento ficou consistente entre desktop e modal mobile, reaproveitando o mesmo componente de filtros.
+
+### Comportamento funcional
+
+- O tipo continua sendo filtro visual no frontend (sem envio para o backend nesta etapa).
+- Categoria e periodo continuam sendo aplicados via listagem backend, quando informados.
+- Periodo so e considerado quando `dataInicio` e `dataFim` estao preenchidos.
+
+### Arquivos alterados nesta atualizacao
+
+- `frontend/src/app/features/transacoes/ui/filtros-transacoes/filtros-transacoes.ts`
+- `frontend/src/app/features/transacoes/ui/filtros-transacoes/filtros-transacoes.html`
+- `frontend/src/app/features/transacoes/pages/transacoes/transacoes.ts`
+- `frontend/src/app/features/transacoes/pages/transacoes/transacoes.html`
+- `frontend/src/app/features/transacoes/paginaTransacoesContrato.spec.ts`
+
+### Validacao executada
+
+- `cd frontend && npm run test` com sucesso (`46` testes, `0` falhas).

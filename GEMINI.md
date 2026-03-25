@@ -114,6 +114,7 @@ A API segue o padrão RESTful com prefixo `/api/v1`.
 - Sempre que for necessário, atualize o arquivo SCRATCHPAD.md com suas anotações e rascunhos.
 - O arquivo .github/instructions/instructions.md contém o histórico completo e regras legadas. Não o leia por padrão. Consulte-o apenas se eu solicitar explicitamente uma análise de escopo global ou se houver dúvida sobre uma regra de negócio não coberta nos arquivos de .rules.
 - A pasta docs deve ser sempre atualizada com as funcionalidades implementadas, com diagramas, contratos de API, etc. Caso uma funcionalidade com documentação exista, atualizar o arquivo correspondente na pasta docs.
+- Para maiores contextos do que foi implementado, utilize os docs dentro da pasta docs
 - Após cada implementação realize as seguintes verificações:
     - [ ] Código segue as convenções de estilo e padrões do projeto.
     - [ ] Verificação de acessibilidade (WCAG 2.1 AA) concluída.

@@ -1,26 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
-import {
-  Bell,
-  CircleUserRound,
-  DoorOpen,
-  LogOut,
-  LucideAngularModule,
-  Plus,
-} from 'lucide-angular';
 
-import { AuthStore } from '../../../../store/auth/auth-store';
 import { Transacao } from '../../../../models/transacao.models';
 import { extrairMensagemErroTransacao } from '../../../../shared/utils/mensagem-erro-transacao';
 import { ServicoTransacoes } from '../../../transacoes/service/servico-transacoes';
-
-type ItemNavegacao = Readonly<{
-  titulo: string;
-  subtitulo: string;
-  rota?: string;
-  ativo?: boolean;
-}>;
 
 type CategoriaResumo = Readonly<{
   categoria: string;
@@ -46,7 +30,6 @@ type ContaPendente = Readonly<{
 
 @Component({
   selector: 'app-painel',
-  imports: [RouterLink, LucideAngularModule],
   templateUrl: './painel.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -54,9 +37,7 @@ type ContaPendente = Readonly<{
   },
 })
 export class PaginaPainel {
-  private readonly authStore = inject(AuthStore);
   private readonly servicoTransacoes = inject(ServicoTransacoes);
-  private readonly roteador = inject(Router);
   private readonly formatadorMoeda = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
@@ -67,67 +48,6 @@ export class PaginaPainel {
   readonly carregandoResumo = signal(false);
   readonly mensagemErroResumo = signal<string | null>(null);
   readonly transacoes = signal<readonly Transacao[]>([]);
-  readonly iconeUsuario = CircleUserRound;
-  readonly iconeNotificacao = Bell;
-  readonly iconeAdicionar = Plus;
-  readonly iconeSair = LogOut;
-  readonly iconePorta = DoorOpen;
-
-  readonly temSessao = this.authStore.autenticado;
-  readonly descricaoSessao = this.authStore.descricaoSessao;
-
-  readonly navegacaoLateral: readonly ItemNavegacao[] = [
-    {
-      titulo: 'Painel',
-      subtitulo: 'Dashboard',
-      rota: '/painel',
-      ativo: true,
-    },
-    {
-      titulo: 'Transações',
-      subtitulo: 'Lançamentos',
-      rota: '/transacoes',
-    },
-    {
-      titulo: 'Resumo inicial',
-      subtitulo: 'Visão geral',
-      rota: '/inicio',
-    },
-    {
-      titulo: 'Metas',
-      subtitulo: 'Em breve',
-    },
-    {
-      titulo: 'Faturas',
-      subtitulo: 'Em breve',
-    },
-    {
-      titulo: 'Notificações',
-      subtitulo: 'Em breve',
-    },
-  ];
-
-  readonly navegacaoMobile: readonly ItemNavegacao[] = [
-    {
-      titulo: 'Painel',
-      subtitulo: 'Dashboard',
-      rota: '/painel',
-      ativo: true,
-    },
-    {
-      titulo: 'Transações',
-      subtitulo: 'Lançamentos',
-      rota: '/transacoes',
-    },
-    {
-      titulo: 'Metas',
-      subtitulo: 'Em breve',
-    },
-    {
-      titulo: 'Faturas',
-      subtitulo: 'Em breve',
-    },
-  ];
 
   readonly metasMock = [
     {
@@ -165,19 +85,6 @@ export class PaginaPainel {
       valor: 2450,
     },
   ] as const satisfies readonly ContaPendente[];
-
-  readonly saudacao = computed(() => {
-    const sessao = this.authStore.sessao();
-    const nomeSessao = sessao?.nome?.trim() ?? '';
-    const nomeEmail = sessao?.email?.split('@')[0]?.trim() ?? '';
-    const nomeLimpo = nomeSessao || nomeEmail;
-
-    if (!nomeLimpo) {
-      return 'Olá, usuário!';
-    }
-
-    return `Olá, ${nomeLimpo.charAt(0).toUpperCase()}${nomeLimpo.slice(1)}!`;
-  });
 
   readonly resumoFinanceiro = computed(() => {
     const totais = this.transacoes().reduce(
@@ -264,11 +171,6 @@ export class PaginaPainel {
 
   formatarMoeda(valor: number): string {
     return this.formatadorMoeda.format(valor);
-  }
-
-  sair(): void {
-    this.authStore.limparSessao();
-    this.roteador.navigate(['/auth/login']);
   }
 
   private carregarResumo(): void {

@@ -28,50 +28,51 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping(path = TransacaoEndpoints.ROTA_BASE, produces = MediaType.APPLICATION_JSON_VALUE)
 public interface TransacaoEndpoints {
 
-    String ROTA_BASE = "/api/v1/transactions";
-    String ROTA_PRIVADA = ROTA_BASE + "/**";
+        String ROTA_BASE = "/api/v1/transactions";
+        String ROTA_PRIVADA = ROTA_BASE + "/**";
 
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Criar transacao", description = "Cria uma nova transacao para o usuario autenticado.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Transacao criada com sucesso", content = @Content(schema = @Schema(implementation = TransacaoResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Dados invalidos"),
-            @ApiResponse(responseCode = "401", description = "Nao autenticado")
-    })
-    ResponseEntity<TransacaoResponse> criar(@Valid @RequestBody CriarTransacaoRequest requisicao);
+        @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+        @Operation(summary = "Criar transacao", description = "Cria uma nova transacao para o usuario autenticado.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "201", description = "Transacao criada com sucesso", content = @Content(schema = @Schema(implementation = TransacaoResponse.class))),
+                        @ApiResponse(responseCode = "400", description = "Dados invalidos"),
+                        @ApiResponse(responseCode = "401", description = "Nao autenticado")
+        })
+        ResponseEntity<TransacaoResponse> criar(@Valid @RequestBody CriarTransacaoRequest requisicao);
 
-    @GetMapping
-    @Operation(summary = "Listar transacoes", description = "Lista as transacoes do usuario autenticado com filtros opcionais por periodo e por mes/ano.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Parametros invalidos"),
-            @ApiResponse(responseCode = "401", description = "Nao autenticado")
-    })
-    ResponseEntity<List<TransacaoResponse>> listar(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
-            @RequestParam(required = false) Integer mes,
-            @RequestParam(required = false) Integer ano);
+        @GetMapping
+        @Operation(summary = "Listar transacoes", description = "Lista as transacoes do usuario autenticado com filtros opcionais por periodo e por mes/ano.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso"),
+                        @ApiResponse(responseCode = "400", description = "Parametros invalidos"),
+                        @ApiResponse(responseCode = "401", description = "Nao autenticado")
+        })
+        ResponseEntity<List<TransacaoResponse>> listar(
+                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
+                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
+                        @RequestParam(required = false) Integer mes,
+                        @RequestParam(required = false) Integer ano,
+                        @RequestParam(required = false) String categoriaId);
 
-    @PutMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Atualizar transacao", description = "Atualiza uma transacao existente do usuario autenticado.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Transacao atualizada com sucesso", content = @Content(schema = @Schema(implementation = TransacaoResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Dados invalidos"),
-            @ApiResponse(responseCode = "401", description = "Nao autenticado"),
-            @ApiResponse(responseCode = "403", description = "Acesso negado"),
-            @ApiResponse(responseCode = "404", description = "Transacao nao encontrada")
-    })
-    ResponseEntity<TransacaoResponse> atualizar(@PathVariable UUID id,
-            @Valid @RequestBody AtualizarTransacaoRequest requisicao);
+        @PutMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+        @Operation(summary = "Atualizar transacao", description = "Atualiza uma transacao existente do usuario autenticado.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Transacao atualizada com sucesso", content = @Content(schema = @Schema(implementation = TransacaoResponse.class))),
+                        @ApiResponse(responseCode = "400", description = "Dados invalidos"),
+                        @ApiResponse(responseCode = "401", description = "Nao autenticado"),
+                        @ApiResponse(responseCode = "403", description = "Acesso negado"),
+                        @ApiResponse(responseCode = "404", description = "Transacao nao encontrada")
+        })
+        ResponseEntity<TransacaoResponse> atualizar(@PathVariable UUID id,
+                        @Valid @RequestBody AtualizarTransacaoRequest requisicao);
 
-    @DeleteMapping(path = "/{id}")
-    @Operation(summary = "Excluir transacao", description = "Exclui uma transacao existente do usuario autenticado.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Transacao excluida com sucesso"),
-            @ApiResponse(responseCode = "401", description = "Nao autenticado"),
-            @ApiResponse(responseCode = "403", description = "Acesso negado"),
-            @ApiResponse(responseCode = "404", description = "Transacao nao encontrada")
-    })
-    ResponseEntity<Void> excluir(@PathVariable UUID id);
+        @DeleteMapping(path = "/{id}")
+        @Operation(summary = "Excluir transacao", description = "Exclui uma transacao existente do usuario autenticado.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "204", description = "Transacao excluida com sucesso"),
+                        @ApiResponse(responseCode = "401", description = "Nao autenticado"),
+                        @ApiResponse(responseCode = "403", description = "Acesso negado"),
+                        @ApiResponse(responseCode = "404", description = "Transacao nao encontrada")
+        })
+        ResponseEntity<Void> excluir(@PathVariable UUID id);
 }

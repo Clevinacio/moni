@@ -13,6 +13,11 @@ public interface TransacaoRepository extends JpaRepository<Transacao, UUID> {
 
     List<Transacao> findByUsuarioIdOrderByDataDesc(UUID usuarioId);
 
+    List<Transacao> findByUsuarioIdAndCategoriaIdOrderByDataDesc(UUID usuarioId, UUID categoriaId);
+
     List<Transacao> findByUsuarioIdAndDataBetweenOrderByDataDesc(UUID usuarioId, LocalDate dataInicio,
             LocalDate dataFim);
+
+    List<Transacao> findByUsuarioIdAndCategoriaIdAndDataBetweenOrderByDataDesc(UUID usuarioId, UUID categoriaId,
+            LocalDate dataInicio, LocalDate dataFim);
 }

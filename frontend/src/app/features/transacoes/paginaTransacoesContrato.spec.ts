@@ -11,7 +11,10 @@ type PayloadTransacao = Readonly<{
   valor: number;
   data: string;
   tipo: TipoTransacao;
-  categoria: string;
+  categoria: Readonly<{
+    id?: string;
+    nome?: string;
+  }>;
 }>;
 
 interface ContratoFormulario {
@@ -34,6 +37,7 @@ interface SuportePaginaTransacoes {
 
 const caminhoModuloPaginaTransacoes = './pages/transacoes/transacoes';
 const caminhoModuloServicoTransacoes = './service/servico-transacoes';
+const caminhoModuloServicoCategorias = './service/servico-categorias';
 const caminhoTemplatePaginaTransacoes =
   'src/app/features/transacoes/pages/transacoes/transacoes.html';
 
@@ -55,6 +59,12 @@ function resolverTemplatePaginaTransacoes(url: string): Promise<string> {
   }
   if (url === './input-formulario.html') {
     return readFile('src/app/shared/components/input-formulario/input-formulario.html', 'utf-8');
+  }
+  if (url === './campo-categoria-transacao.html') {
+    return readFile(
+      'src/app/shared/components/campo-categoria-transacao/campo-categoria-transacao.html',
+      'utf-8',
+    );
   }
   if (url === './botao-submit.html') {
     return readFile('src/app/shared/components/botao-submit/botao-submit.html', 'utf-8');
@@ -87,7 +97,8 @@ describe('RF02 - Contrato da PaginaTransacoes futura (TDD RED)', () => {
       valor: null,
       data: '',
       tipo: '',
-      categoria: '',
+      categoriaId: '',
+      categoriaNome: '',
     });
 
     expect(formulario.invalid).toBe(true);
@@ -95,7 +106,7 @@ describe('RF02 - Contrato da PaginaTransacoes futura (TDD RED)', () => {
     expect(temErroValidacao(formulario.get('valor'), 'required')).toBe(true);
     expect(temErroValidacao(formulario.get('data'), 'required')).toBe(true);
     expect(temErroValidacao(formulario.get('tipo'), 'required')).toBe(true);
-    expect(temErroValidacao(formulario.get('categoria'), 'required')).toBe(true);
+    expect(temErroValidacao(formulario.get('categoriaId'), 'required')).toBe(true);
   });
 
   it('deve invalidar quando valor for menor ou igual a zero', async () => {
@@ -107,7 +118,8 @@ describe('RF02 - Contrato da PaginaTransacoes futura (TDD RED)', () => {
       valor: 0,
       data: '2026-03-20',
       tipo: 'DESPESA',
-      categoria: 'Alimentacao',
+      categoriaId: 'cat-01',
+      categoriaNome: '',
     });
 
     expect(formulario.invalid).toBe(true);
@@ -123,7 +135,8 @@ describe('RF02 - Contrato da PaginaTransacoes futura (TDD RED)', () => {
       valor: 1200,
       data: '2026-03-20',
       tipo: 'RECEITA',
-      categoria: 'Trabalho',
+      categoriaId: 'cat-01',
+      categoriaNome: '',
     });
 
     await suporte.submeter();
@@ -142,7 +155,9 @@ describe('RF02 - Contrato da PaginaTransacoes futura (TDD RED)', () => {
       valor: 1200,
       data: '2026-03-20',
       tipo: 'RECEITA',
-      categoria: 'Trabalho',
+      categoria: {
+        id: 'cat-01',
+      },
     });
     expect(Object.keys(primeiraChamada).sort()).toEqual([
       'categoria',
@@ -178,7 +193,8 @@ describe('RF02 - Contrato da PaginaTransacoes futura (TDD RED)', () => {
       valor: 280,
       data: '2026-03-19',
       tipo: 'DESPESA',
-      categoria: 'Alimentacao',
+      categoriaId: 'cat-01',
+      categoriaNome: '',
     });
 
     await suporte.submeter();
@@ -191,7 +207,47 @@ describe('RF02 - Contrato da PaginaTransacoes futura (TDD RED)', () => {
         valor: 280,
         data: '2026-03-19',
         tipo: 'DESPESA',
-        categoria: 'Alimentacao',
+        categoria: {
+          id: 'cat-01',
+        },
+      },
+    });
+  });
+
+  it('deve permitir alternar para modo nova categoria e enviar nome obrigatorio', async () => {
+    const suporte = await criarSuportePaginaTransacoes();
+    const formulario = resolverFormulario(suporte.componente, 'PaginaTransacoes');
+
+    const metodoAlternarNovaCategoria = resolverMetodo(
+      suporte.componente,
+      ['alternarModoNovaCategoria', 'alternarNovaCategoria', 'ativarNovaCategoria'],
+      'PaginaTransacoes',
+    );
+
+    metodoAlternarNovaCategoria();
+
+    formulario.patchValue({
+      descricao: 'Consultoria',
+      valor: 500,
+      data: '2026-03-20',
+      tipo: 'RECEITA',
+      categoriaId: '',
+      categoriaNome: '',
+    });
+
+    expect(formulario.invalid).toBe(true);
+    expect(temErroValidacao(formulario.get('categoriaNome'), 'required')).toBe(true);
+
+    formulario.patchValue({ categoriaNome: 'Freelance' });
+    await suporte.submeter();
+
+    expect(suporte.chamadasCriar[0]).toEqual({
+      descricao: 'Consultoria',
+      valor: 500,
+      data: '2026-03-20',
+      tipo: 'RECEITA',
+      categoria: {
+        nome: 'Freelance',
       },
     });
   });
@@ -211,32 +267,56 @@ describe('RF02 - Contrato da PaginaTransacoes futura (TDD RED)', () => {
     expect(suporte.chamadasExcluir).toEqual(['tx-20']);
   });
 
-  it('deve aplicar filtro por periodo e filtro mensal em chamadas de listagem', async () => {
+  it('deve aplicar filtro consolidado por periodo em chamadas de listagem', async () => {
     const suporte = await criarSuportePaginaTransacoes();
 
-    const metodoFiltrarPeriodo = resolverMetodo(
+    const metodoAplicarFiltros = resolverMetodo(
       suporte.componente,
-      ['aplicarFiltroPeriodo', 'filtrarPorPeriodo'],
+      ['aplicarFiltros', 'filtrar'],
       'PaginaTransacoes',
     );
 
-    const resultadoPeriodo = metodoFiltrarPeriodo('2026-03-01', '2026-03-31');
-    await aguardarResultadoPossivelmenteAssincrono(resultadoPeriodo);
-
-    const metodoFiltrarMes = resolverMetodo(
-      suporte.componente,
-      ['aplicarFiltroMensal', 'filtrarPorMes'],
-      'PaginaTransacoes',
-    );
-
-    const resultadoMes = metodoFiltrarMes(3, 2026);
-    await aguardarResultadoPossivelmenteAssincrono(resultadoMes);
+    const resultado = metodoAplicarFiltros({
+      tipo: 'RECEITA',
+      dataInicio: '2026-03-01',
+      dataFim: '2026-03-31',
+    });
+    await aguardarResultadoPossivelmenteAssincrono(resultado);
 
     expect(suporte.chamadasListar).toEqual([
       undefined,
       { dataInicio: '2026-03-01', dataFim: '2026-03-31' },
-      { mes: 3, ano: 2026 },
     ]);
+  });
+
+  it('deve aplicar filtro consolidado por categoria em chamada de listagem', async () => {
+    const suporte = await criarSuportePaginaTransacoes();
+
+    const metodoAplicarFiltros = resolverMetodo(
+      suporte.componente,
+      ['aplicarFiltros', 'filtrar'],
+      'PaginaTransacoes',
+    );
+
+    const resultadoCategoria = metodoAplicarFiltros({ tipo: 'TODAS', categoriaId: 'cat-02' });
+    await aguardarResultadoPossivelmenteAssincrono(resultadoCategoria);
+
+    expect(suporte.chamadasListar).toEqual([undefined, { categoriaId: 'cat-02' }]);
+  });
+
+  it('deve aplicar apenas filtro visual de tipo e listar sem filtros de backend', async () => {
+    const suporte = await criarSuportePaginaTransacoes();
+
+    const metodoAplicarFiltros = resolverMetodo(
+      suporte.componente,
+      ['aplicarFiltros', 'filtrar'],
+      'PaginaTransacoes',
+    );
+
+    const resultado = metodoAplicarFiltros({ tipo: 'DESPESA' });
+    await aguardarResultadoPossivelmenteAssincrono(resultado);
+
+    expect(suporte.chamadasListar).toEqual([undefined, undefined]);
   });
 });
 
@@ -250,6 +330,11 @@ async function criarSuportePaginaTransacoes(): Promise<SuportePaginaTransacoes> 
     caminhoModuloServicoTransacoes,
     'ServicoTransacoes',
     'ServicoTransacoes',
+  );
+  const tipoServicoCategorias = await carregarClasseContrato(
+    caminhoModuloServicoCategorias,
+    'ServicoCategorias',
+    'ServicoCategorias',
   );
 
   const chamadasCriar: Array<Record<string, unknown>> = [];
@@ -282,6 +367,14 @@ async function criarSuportePaginaTransacoes(): Promise<SuportePaginaTransacoes> 
     },
   };
 
+  const stubServicoCategorias = {
+    listar: (): Observable<unknown> =>
+      of([
+        { id: 'cat-01', nome: 'Trabalho' },
+        { id: 'cat-02', nome: 'Alimentacao' },
+      ]),
+  };
+
   await resolveComponentResources(resolverTemplatePaginaTransacoes);
 
   TestBed.configureTestingModule({
@@ -290,6 +383,10 @@ async function criarSuportePaginaTransacoes(): Promise<SuportePaginaTransacoes> 
       {
         provide: tipoServicoTransacoes,
         useValue: stubServicoTransacoes,
+      },
+      {
+        provide: tipoServicoCategorias,
+        useValue: stubServicoCategorias,
       },
     ],
   });
@@ -322,6 +419,10 @@ async function criarSuportePaginaTransacoes(): Promise<SuportePaginaTransacoes> 
 
 function construirTransacaoResposta(id: string, payload: unknown): Record<string, unknown> {
   const dados = ehRegistro(payload) ? payload : {};
+  const categoria =
+    ehRegistro(dados['categoria']) && typeof dados['categoria']['nome'] === 'string'
+      ? dados['categoria']['nome']
+      : 'Categoria';
 
   return {
     id,
@@ -329,7 +430,7 @@ function construirTransacaoResposta(id: string, payload: unknown): Record<string
     valor: dados['valor'] ?? 1,
     data: dados['data'] ?? '2026-03-20',
     tipo: dados['tipo'] ?? 'RECEITA',
-    categoria: dados['categoria'] ?? 'Categoria',
+    categoria,
   };
 }
 
@@ -361,7 +462,7 @@ function resolverFormulario(componente: unknown, nomeContexto: string): Contrato
   }
 
   throw new Error(
-    `Contrato RF02 nao atendido: ${nomeContexto} precisa expor um FormGroup com descricao, valor, data, tipo e categoria.`,
+    `Contrato RF02 nao atendido: ${nomeContexto} precisa expor um FormGroup com descricao, valor, data, tipo, categoriaId e categoriaNome.`,
   );
 }
 

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -6,10 +6,12 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { Funnel, LucideAngularModule, Plus, X, XCircle, ChevronDown } from 'lucide-angular';
 import { finalize } from 'rxjs';
 
 import {
-  FiltroMensalTransacao,
+  Categoria,
+  FiltroCategoriaTransacao,
   FiltroPeriodoTransacao,
   FiltrosTransacao,
   PayloadTransacao,
@@ -17,7 +19,9 @@ import {
 } from '../../../../models/transacao.models';
 import { InputFormularioComponent } from '../../../../shared/components/input-formulario/input-formulario';
 import { BotaoSubmitComponent } from '../../../../shared/components/botao-submit/botao-submit';
+import { CampoCategoriaTransacaoComponent } from '../../../../shared/components/campo-categoria-transacao/campo-categoria-transacao';
 import { ServicoTransacoes } from '../../service/servico-transacoes';
+import { ServicoCategorias } from '../../service/servico-categorias';
 import { FiltrosTransacoesComponent } from '../../ui/filtros-transacoes/filtros-transacoes';
 import { ListaTransacoesComponent } from '../../ui/lista-transacoes/lista-transacoes';
 import { TransacoesStore } from '../../../../store/transacoes/transacoes-store';
@@ -28,15 +32,27 @@ type FormularioTransacao = {
   valor: FormControl<number>;
   data: FormControl<string>;
   tipo: FormControl<string>;
-  categoria: FormControl<string>;
+  categoriaId: FormControl<string>;
+  categoriaNome: FormControl<string>;
+};
+
+type TipoFiltroVisual = 'TODAS' | 'RECEITA' | 'DESPESA';
+
+type FiltroConsolidadoVisual = {
+  tipo: TipoFiltroVisual;
+  dataInicio?: string;
+  dataFim?: string;
+  categoriaId?: string;
 };
 
 @Component({
   selector: 'app-pagina-transacoes',
   imports: [
     ReactiveFormsModule,
+    LucideAngularModule,
     InputFormularioComponent,
     BotaoSubmitComponent,
+    CampoCategoriaTransacaoComponent,
     FiltrosTransacoesComponent,
     ListaTransacoesComponent,
   ],
@@ -49,6 +65,7 @@ type FormularioTransacao = {
 export class PaginaTransacoes {
   private readonly construtorFormulario = inject(NonNullableFormBuilder);
   private readonly servicoTransacoes = inject(ServicoTransacoes);
+  private readonly servicoCategorias = inject(ServicoCategorias);
   private readonly transacoesStore = inject(TransacoesStore);
 
   readonly formulario: FormGroup<FormularioTransacao> = this.construtorFormulario.group({
@@ -59,10 +76,8 @@ export class PaginaTransacoes {
     valor: this.construtorFormulario.control(0, [Validators.required, Validators.min(0.01)]),
     data: this.construtorFormulario.control('', [Validators.required]),
     tipo: this.construtorFormulario.control('', [Validators.required]),
-    categoria: this.construtorFormulario.control('', [
-      Validators.required,
-      Validators.maxLength(100),
-    ]),
+    categoriaId: this.construtorFormulario.control('', [Validators.required]),
+    categoriaNome: this.construtorFormulario.control('', [Validators.maxLength(100)]),
   });
 
   readonly carregando = this.transacoesStore.carregando;
@@ -73,9 +88,100 @@ export class PaginaTransacoes {
   readonly transacaoEmEdicaoId = this.transacoesStore.transacaoEmEdicaoId;
   readonly temMensagemErro = computed(() => this.mensagemErro() !== null);
   readonly temMensagemSucesso = computed(() => this.mensagemSucesso() !== null);
+  readonly modalTransacaoAberto = signal(false);
+  readonly modalFiltrosMobileAberto = signal(false);
+  readonly filtroVisualTipo = signal<TipoFiltroVisual>('TODAS');
+  readonly modoNovaCategoria = signal(false);
+  readonly categorias = signal<Categoria[]>([]);
+  readonly filtrosDesktopExpandido = signal(true);
+
+  readonly iconeAdicionar = Plus;
+  readonly iconeFiltrar = Funnel;
+  readonly iconeFechar = X;
+  readonly iconeLimpar = XCircle;
+  readonly iconeChevron = ChevronDown;
+
+  readonly transacoesFiltradas = computed(() => {
+    const filtroVisual = this.filtroVisualTipo();
+
+    if (filtroVisual === 'TODAS') {
+      return this.transacoes();
+    }
+
+    return this.transacoes().filter((item) => item.tipo === filtroVisual);
+  });
+
+  readonly totalTransacoesVisiveis = computed(() => this.transacoesFiltradas().length);
 
   constructor() {
+    this.carregarCategorias();
     this.listar();
+  }
+
+  abrirModalTransacao(): void {
+    this.transacoesStore.definirErro(null);
+    this.transacoesStore.definirSucesso(null);
+    this.modalTransacaoAberto.set(true);
+  }
+
+  fecharModalTransacao(): void {
+    this.modalTransacaoAberto.set(false);
+  }
+
+  abrirNovaTransacao(): void {
+    this.transacoesStore.definirEmEdicao(null);
+    this.transacoesStore.definirErro(null);
+    this.transacoesStore.definirSucesso(null);
+    this.formulario.reset({
+      descricao: '',
+      valor: 0,
+      data: '',
+      tipo: '',
+      categoriaId: '',
+      categoriaNome: '',
+    });
+    this.modoNovaCategoria.set(false);
+    this.atualizarValidadoresCategoria();
+    this.abrirModalTransacao();
+  }
+
+  alternarModoNovaCategoria(): void {
+    const novoModo = !this.modoNovaCategoria();
+    this.modoNovaCategoria.set(novoModo);
+
+    if (novoModo) {
+      this.formulario.controls.categoriaId.setValue('');
+    } else {
+      this.formulario.controls.categoriaNome.setValue('');
+    }
+
+    this.atualizarValidadoresCategoria();
+  }
+
+  abrirModalFiltrosMobile(): void {
+    this.modalFiltrosMobileAberto.set(true);
+  }
+
+  fecharModalFiltrosMobile(): void {
+    this.modalFiltrosMobileAberto.set(false);
+  }
+
+  alternarFiltrosDesktop(): void {
+    this.filtrosDesktopExpandido.set(!this.filtrosDesktopExpandido());
+  }
+
+  definirFiltroVisualTipo(tipo: TipoFiltroVisual): void {
+    this.filtroVisualTipo.set(tipo);
+  }
+
+  aplicarFiltros(filtros: FiltroConsolidadoVisual): void {
+    this.definirFiltroVisualTipo(filtros.tipo);
+
+    const filtroBackend = this.montarFiltroBackend(filtros);
+
+    this.transacoesStore.definirFiltroAtivo(filtroBackend);
+    this.modalFiltrosMobileAberto.set(false);
+    this.listar(filtroBackend);
   }
 
   onSubmit(): void {
@@ -84,7 +190,7 @@ export class PaginaTransacoes {
       return;
     }
 
-    const payload = this.formulario.getRawValue() as PayloadTransacao;
+    const payload = this.montarPayload();
 
     this.transacoesStore.definirCarregando(true);
     this.transacoesStore.definirErro(null);
@@ -103,13 +209,18 @@ export class PaginaTransacoes {
           valor: 0,
           data: '',
           tipo: '',
-          categoria: '',
+          categoriaId: '',
+          categoriaNome: '',
         });
+        this.modoNovaCategoria.set(false);
+        this.atualizarValidadoresCategoria();
+        this.carregarCategorias();
 
         this.transacoesStore.definirSucesso(
           idEmEdicao ? 'Transação atualizada com sucesso.' : 'Transação criada com sucesso.',
         );
         this.transacoesStore.definirEmEdicao(null);
+        this.modalTransacaoAberto.set(false);
         this.listar();
       },
       error: (erro: unknown) => {
@@ -130,8 +241,27 @@ export class PaginaTransacoes {
       valor: transacao.valor,
       data: transacao.data,
       tipo: transacao.tipo,
-      categoria: transacao.categoria,
+      categoriaId: '',
+      categoriaNome: '',
     });
+
+    const categoriaExistente = this.categorias().find(
+      (item) => item.nome.toLowerCase() === transacao.categoria.toLowerCase(),
+    );
+
+    if (categoriaExistente) {
+      this.modoNovaCategoria.set(false);
+      this.formulario.controls.categoriaId.setValue(categoriaExistente.id);
+      this.formulario.controls.categoriaNome.setValue('');
+    } else {
+      this.modoNovaCategoria.set(true);
+      this.formulario.controls.categoriaId.setValue('');
+      this.formulario.controls.categoriaNome.setValue(transacao.categoria);
+    }
+
+    this.atualizarValidadoresCategoria();
+
+    this.modalTransacaoAberto.set(true);
   }
 
   excluirTransacao(id: string): void {
@@ -155,20 +285,10 @@ export class PaginaTransacoes {
       });
   }
 
-  aplicarFiltroPeriodo(dataInicio: string, dataFim: string): void {
-    const filtro: FiltroPeriodoTransacao = { dataInicio, dataFim };
-    this.transacoesStore.definirFiltroAtivo(filtro);
-    this.listar(filtro);
-  }
-
-  aplicarFiltroMensal(mes: number, ano: number): void {
-    const filtro: FiltroMensalTransacao = { mes, ano };
-    this.transacoesStore.definirFiltroAtivo(filtro);
-    this.listar(filtro);
-  }
-
   limparFiltros(): void {
+    this.filtroVisualTipo.set('TODAS');
     this.transacoesStore.definirFiltroAtivo(undefined);
+    this.modalFiltrosMobileAberto.set(false);
     this.listar();
   }
 
@@ -194,5 +314,72 @@ export class PaginaTransacoes {
           );
         },
       });
+  }
+
+  private montarFiltroBackend(filtros: FiltroConsolidadoVisual): FiltrosTransacao | undefined {
+    const categoriaId = filtros.categoriaId?.trim();
+    const possuiPeriodoCompleto = Boolean(filtros.dataInicio) && Boolean(filtros.dataFim);
+
+    if (possuiPeriodoCompleto) {
+      const filtroPeriodo: FiltroPeriodoTransacao = {
+        dataInicio: filtros.dataInicio as string,
+        dataFim: filtros.dataFim as string,
+        ...(categoriaId ? { categoriaId } : {}),
+      };
+
+      return filtroPeriodo;
+    }
+
+    if (categoriaId) {
+      const filtroCategoria: FiltroCategoriaTransacao = { categoriaId };
+      return filtroCategoria;
+    }
+
+    return undefined;
+  }
+
+  private carregarCategorias(): void {
+    this.servicoCategorias.listar().subscribe({
+      next: (lista) => {
+        this.categorias.set(lista);
+      },
+      error: () => {
+        this.categorias.set([]);
+      },
+    });
+  }
+
+  private montarPayload(): PayloadTransacao {
+    const valores = this.formulario.getRawValue();
+
+    return {
+      descricao: valores.descricao,
+      valor: valores.valor,
+      data: valores.data,
+      tipo: valores.tipo as PayloadTransacao['tipo'],
+      categoria: this.modoNovaCategoria()
+        ? {
+            nome: valores.categoriaNome.trim(),
+          }
+        : {
+            id: valores.categoriaId,
+          },
+    };
+  }
+
+  private atualizarValidadoresCategoria(): void {
+    if (this.modoNovaCategoria()) {
+      this.formulario.controls.categoriaId.clearValidators();
+      this.formulario.controls.categoriaNome.setValidators([
+        Validators.required,
+        Validators.maxLength(100),
+      ]);
+    } else {
+      this.formulario.controls.categoriaNome.setValidators([Validators.maxLength(100)]);
+      this.formulario.controls.categoriaId.setValidators([Validators.required]);
+    }
+
+    this.formulario.controls.categoriaId.updateValueAndValidity({ emitEvent: false });
+    this.formulario.controls.categoriaNome.updateValueAndValidity({ emitEvent: false });
   }
 }

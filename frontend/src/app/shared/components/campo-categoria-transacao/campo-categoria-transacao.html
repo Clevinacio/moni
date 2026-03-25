@@ -1,0 +1,40 @@
+<div class="grid gap-1.5">
+    @if (!modoNovaCategoria) {
+    <label for="categoriaId" class="text-sm font-semibold text-brand-dark">Categoria</label>
+    <div class="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+        <select id="categoriaId" [formControl]="controleCategoriaId"
+            class="min-h-11 rounded-xl border border-brand-light bg-white px-3 py-2.5 text-brand-dark transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            [attr.aria-invalid]="invalidoCategoriaId">
+            <option value="">Selecione</option>
+            @for (categoria of categorias; track categoria.id) {
+            <option [value]="categoria.id">{{ categoria.nome }}</option>
+            }
+        </select>
+
+        <button type="button" (click)="alternarModo()"
+            class="inline-flex min-h-11 items-center justify-center rounded-xl border border-brand-light px-3 py-2 text-xs font-semibold text-brand-dark transition hover:bg-brand-light/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            aria-label="Nova categoria">
+            Nova categoria
+        </button>
+    </div>
+
+    @if (invalidoCategoriaId === 'true') {
+    <p class="m-0 text-xs font-semibold text-error" role="alert">Categoria é obrigatória.</p>
+    } @else {
+    <p class="m-0 text-xs text-brand-dark/65">Selecione uma categoria existente ou crie uma nova.</p>
+    }
+    } @else {
+    <app-input-formulario id="categoriaNome" rotulo="Nova categoria"
+        ajuda="Informe a nova categoria com no máximo 100 caracteres." [invalido]="invalidoCategoriaNome"
+        [controle]="controleCategoriaNome" [mensagensErro]="{
+			required: 'Nova categoria é obrigatória.',
+			maxlength: 'Categoria deve ter no máximo 100 caracteres.'
+		}" />
+
+    <button type="button" (click)="alternarModo()"
+        class="inline-flex min-h-11 w-fit items-center justify-center rounded-xl border border-brand-light px-3 py-2 text-xs font-semibold text-brand-dark transition hover:bg-brand-light/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+        aria-label="Usar categoria existente">
+        Usar existente
+    </button>
+    }
+</div>

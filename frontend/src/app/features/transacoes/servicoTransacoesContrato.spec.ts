@@ -11,7 +11,10 @@ type PayloadTransacao = Readonly<{
   valor: number;
   data: string;
   tipo: TipoTransacao;
-  categoria: string;
+  categoria: Readonly<{
+    id?: string;
+    nome?: string;
+  }>;
 }>;
 
 type FiltroPeriodo = Readonly<{
@@ -24,7 +27,17 @@ type FiltroMes = Readonly<{
   ano: number;
 }>;
 
-type FiltrosTransacao = FiltroPeriodo | FiltroMes;
+type FiltroCategoria = Readonly<{
+  categoriaId: string;
+}>;
+
+type FiltrosTransacao = Readonly<{
+  dataInicio?: string;
+  dataFim?: string;
+  mes?: number;
+  ano?: number;
+  categoriaId?: string;
+}>;
 
 interface ContratoServicoTransacoes {
   listar(filtros?: FiltrosTransacao): Observable<unknown>;
@@ -131,6 +144,62 @@ describe('RF02 - Contrato do ServicoTransacoes futuro (TDD RED)', () => {
     validarListaTransacoesEstrita(resposta);
   });
 
+  it('deve listar transacoes com filtro por categoria e serializar categoriaId', async () => {
+    const suporte = await criarSuporteServicoTransacoes();
+
+    const promessaResposta = firstValueFrom(
+      suporte.servico.listar({
+        categoriaId: 'cat-01',
+      }),
+    );
+
+    const requisicao = suporte.controladorHttp.expectOne(
+      (valor) =>
+        extrairCaminhoUrl(valor.url) === endpointTransacoes &&
+        valor.params.get('categoriaId') === 'cat-01',
+    );
+
+    expect(requisicao.request.method).toBe('GET');
+    expect(requisicao.request.params.has('dataInicio')).toBe(false);
+    expect(requisicao.request.params.has('dataFim')).toBe(false);
+    expect(requisicao.request.params.has('mes')).toBe(false);
+    expect(requisicao.request.params.has('ano')).toBe(false);
+
+    requisicao.flush([construirTransacaoRespostaValida()]);
+
+    const resposta = await promessaResposta;
+    validarListaTransacoesEstrita(resposta);
+  });
+
+  it('deve listar transacoes com filtro mensal e categoria em conjunto', async () => {
+    const suporte = await criarSuporteServicoTransacoes();
+
+    const promessaResposta = firstValueFrom(
+      suporte.servico.listar({
+        mes: 3,
+        ano: 2026,
+        categoriaId: 'cat-01',
+      }),
+    );
+
+    const requisicao = suporte.controladorHttp.expectOne(
+      (valor) =>
+        extrairCaminhoUrl(valor.url) === endpointTransacoes &&
+        valor.params.get('mes') === '3' &&
+        valor.params.get('ano') === '2026' &&
+        valor.params.get('categoriaId') === 'cat-01',
+    );
+
+    expect(requisicao.request.method).toBe('GET');
+    expect(requisicao.request.params.has('dataInicio')).toBe(false);
+    expect(requisicao.request.params.has('dataFim')).toBe(false);
+
+    requisicao.flush([construirTransacaoRespostaValida()]);
+
+    const resposta = await promessaResposta;
+    validarListaTransacoesEstrita(resposta);
+  });
+
   it('deve criar transacao em POST /api/v1/transactions sem enviar userId', async () => {
     const suporte = await criarSuporteServicoTransacoes();
     const payload = construirPayloadTransacaoValido();
@@ -147,6 +216,7 @@ describe('RF02 - Contrato do ServicoTransacoes futuro (TDD RED)', () => {
       'tipo',
       'valor',
     ]);
+    expect(requisicao.request.body.categoria).toEqual({ id: 'cat-01' });
     expect(temPropriedadePropria(requisicao.request.body, 'userId')).toBe(false);
 
     requisicao.flush(construirTransacaoRespostaValida());
@@ -398,7 +468,9 @@ function construirPayloadTransacaoValido(): PayloadTransacao {
     valor: 4500,
     data: '2026-03-20',
     tipo: 'RECEITA',
-    categoria: 'Trabalho',
+    categoria: {
+      id: 'cat-01',
+    },
   };
 }
 
