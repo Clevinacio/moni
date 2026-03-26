@@ -1,11 +1,8 @@
-<button
-  type="submit"
-  [disabled]="carregando || desabilitado"
-  class="min-h-11 rounded-xl bg-gradient-to-r from-brand to-brand-dark px-4 py-2 text-sm font-bold text-white transition hover:brightness-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-70"
->
+<button type="submit" [disabled]="carregando || desabilitado"
+  class="min-h-11 rounded-xl bg-linear-to-r from-brand to-brand-dark px-4 py-2 text-sm font-bold text-white transition hover:brightness-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-70">
   @if (carregando) {
-    <span>{{ rotuloCarregando }}</span>
+  <span>{{ rotuloCarregando }}</span>
   } @else {
-    <span>{{ rotuloPadrao }}</span>
+  <span>{{ rotuloPadrao }}</span>
   }
 </button>

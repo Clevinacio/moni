@@ -16,10 +16,43 @@ Substituir as cores padrão do Tailwind por uma paleta customizada, coerente e a
 | `error`           | `#B84A4A` | Erros de validação e mensagens críticas (AA)   |
 | `alert`           | `#D9A05B` | Avisos (usar com `text-brand-dark` ou preto)   |
 
+## Tokens Dinâmicos por Tema (2026-03-25)
+
+Com a implementação do modo escuro, os tokens passaram a ser lidos por variáveis CSS (`rgb(var(--token) / <alpha-value>)`), mantendo as classes Tailwind existentes e trocando apenas os valores por tema.
+
+### Tema claro (`:root`)
+
+| Variável CSS | Valor RGB |
+|---|---|
+| `--color-brand-dark` | `53 88 114` |
+| `--color-brand` | `122 170 206` |
+| `--color-brand-light` | `156 213 255` |
+| `--color-background` | `247 248 240` |
+| `--color-surface` | `255 255 255` |
+| `--color-success` | `74 124 89` |
+| `--color-error` | `184 74 74` |
+| `--color-alert` | `217 160 91` |
+
+### Tema escuro (`.dark`)
+
+| Variável CSS | Valor RGB |
+|---|---|
+| `--color-brand-dark` | `228 238 247` |
+| `--color-brand` | `124 183 226` |
+| `--color-brand-light` | `91 130 161` |
+| `--color-background` | `18 24 32` |
+| `--color-surface` | `26 35 48` |
+| `--color-success` | `97 184 124` |
+| `--color-error` | `232 120 120` |
+| `--color-alert` | `232 181 116` |
+
 ## Arquivos Alterados
 
 - `frontend/tailwind.config.ts` — adicionado (novo arquivo de configuração Tailwind v4)
-- `frontend/src/styles.css` — aplica `@config` + layer base com `bg-background text-brand-dark`
+- `frontend/src/styles.css` — aplica `@config`, variáveis CSS para claro/escuro e layer base com `bg-background text-brand-dark`
+- `frontend/src/index.html` — script anti-FOUC para aplicar `.dark` antes do bootstrap
+- `frontend/src/app/store/preferencia-ui/preferencia-ui-store.ts` — estado de tema com Angular Signals
+- `frontend/src/app/store/preferencia-ui/preferencia-ui-storage.ts` — persistência de preferência no localStorage
 - `frontend/src/app/features/auth/pages/login/login.html` — classes migradas para a nova paleta
 - `frontend/src/app/features/auth/pages/cadastro/cadastro.html` — idem
 - `frontend/src/app/features/auth/pages/painel/painel.html` — idem
@@ -40,5 +73,5 @@ Substituir as cores padrão do Tailwind por uma paleta customizada, coerente e a
 
 ## Validação Executada
 
-- Build: `npx ng build` — OK ✅
-- Testes: `npx ng test --watch=false` — 21/21 passando ✅
+- Build: `npm run build` — OK ✅
+- Testes: `npm run test` — 49/49 passando ✅

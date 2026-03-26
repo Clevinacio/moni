@@ -1,5 +1,7 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+
+import { PreferenciaUiStore } from './store/preferencia-ui/preferencia-ui-store';
 
 @Component({
   selector: 'app-root',
@@ -7,4 +9,11 @@ import { RouterOutlet } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './app.html',
 })
-export class App {}
+export class App {
+  private readonly preferenciaUiStore = inject(PreferenciaUiStore);
+
+  constructor() {
+    this.preferenciaUiStore.inicializarTema();
+    this.preferenciaUiStore.sincronizarTemaComSistema();
+  }
+}

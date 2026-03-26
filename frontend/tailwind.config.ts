@@ -1,6 +1,7 @@
 import type { Config } from 'tailwindcss';
 
 export default {
+  darkMode: 'class',
   content: [
     "./src/**/*.{html,ts}",
   ],
@@ -14,19 +15,20 @@ export default {
       },
       colors: {
         brand: {
-          dark: '#355872',
-          DEFAULT: '#7aaace', // acessado via bg-brand, text-brand, etc
-          light: '#9cd5ff',
+          dark: 'rgb(var(--color-brand-dark) / <alpha-value>)',
+          DEFAULT: 'rgb(var(--color-brand) / <alpha-value>)',
+          light: 'rgb(var(--color-brand-light) / <alpha-value>)',
         },
-        background: '#f7f8f0',
+        background: 'rgb(var(--color-background) / <alpha-value>)',
+        surface: 'rgb(var(--color-surface) / <alpha-value>)',
         success: {
-          DEFAULT: '#4a7c59', // WCAG AA pass text-white
+          DEFAULT: 'rgb(var(--color-success) / <alpha-value>)', // WCAG AA pass text-white
         },
         error: {
-          DEFAULT: '#b84a4a', // WCAG AA pass text-white
+          DEFAULT: 'rgb(var(--color-error) / <alpha-value>)', // WCAG AA pass text-white
         },
         alert: {
-          DEFAULT: '#d9a05b', // Para uso com text-brand-dark ou preto
+          DEFAULT: 'rgb(var(--color-alert) / <alpha-value>)', // Para uso com text-brand-dark ou preto
         }
       }
     },

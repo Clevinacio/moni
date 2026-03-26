@@ -53,7 +53,7 @@ export class ListaTransacoesComponent implements OnChanges {
   @Output() excluir = new EventEmitter<string>();
 
   paginaAtual = 1;
-  readonly itensPorPagina = 8;
+  readonly itensPorPagina = 4;
 
   readonly iconeReceita = BriefcaseBusiness;
   readonly iconeMercado = ShoppingCart;

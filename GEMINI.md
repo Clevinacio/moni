@@ -48,25 +48,22 @@ moni/
 - O usuário deve poder cadastrar, visualizar, editar e excluir transações.
 - Campos obrigatórios: Descrição, Valor, Data, Tipo (Receita/Despesa) e Categoria.
 
-- **RF03: Dashboard Resumo**:
-- Exibição do Saldo Atual (Receitas - Despesas).
-- Resumo visual do mês atual com Total de Entradas e Saídas.
-
-- **RF04: Visualização por Categoria**:
+- **RF03: Visualização por Categoria**:
 - Agrupamento automático de despesas por categoria.
 - Gráfico (Pizza ou Rosca) para distribuição de gastos.
 
-- **RF05: Metas de Economia**:
+- **RF04: Metas de Economia**:
 - Criação de metas com Nome, Valor Alvo e Valor Já Poupado.
 - Exibição de progresso percentual via barra de progresso.
 
-- **RF06: Faturas e Vencimentos**:
+- **RF05: Faturas e Vencimentos**:
 - Cadastro de contas a pagar com Data de Vencimento.
 - Marcação de status "Pago", atualizando o saldo e gerando transação automática.
 
 - **RF07: Central de Notificações In-App**:
 - Área dedicada (ícone de sino) para alertas.
 - Geração automática de notificações para faturas vencendo no dia ou atrasadas.
+- Geração de notificações de metas atingidas
 
 ---
 

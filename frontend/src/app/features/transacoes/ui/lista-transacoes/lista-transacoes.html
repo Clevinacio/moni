@@ -1,18 +1,18 @@
 <section aria-label="Lista de transações" class="grid gap-4">
     @if (carregando) {
     <p
-        class="rounded-2xl border border-brand-light/50 bg-white px-4 py-6 text-center text-sm font-semibold text-brand-dark/80">
+        class="rounded-2xl border border-brand-light/50 bg-surface px-4 py-6 text-center text-sm font-semibold text-brand-dark/80">
         Carregando transações...
     </p>
     } @else if (transacoes.length === 0) {
-    <p class="rounded-2xl border border-brand-light/50 bg-white px-4 py-6 text-center text-sm text-brand-dark/80">
+    <p class="rounded-2xl border border-brand-light/50 bg-surface px-4 py-6 text-center text-sm text-brand-dark/80">
         Nenhuma transação encontrada para os filtros aplicados.
     </p>
     } @else {
     <div class="grid gap-3 lg:hidden">
         @for (transacao of transacoes; track transacao.id) {
         <article
-            class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-3xl border border-brand-light/35 bg-white p-3 shadow-[0_6px_14px_rgba(53,88,114,0.06)]">
+            class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-3xl border border-brand-light/35 bg-surface p-3 shadow-[0_6px_14px_rgba(53,88,114,0.06)] dark:shadow-[0_6px_14px_rgba(0,0,0,0.22)]">
             <span
                 class="inline-flex size-14 items-center justify-center rounded-full border border-brand-light/40 text-brand-dark"
                 [class]="transacao.tipo === 'RECEITA'
@@ -52,7 +52,7 @@
         }
     </div>
 
-    <section class="hidden overflow-hidden rounded-3xl border border-brand-light/45 bg-white lg:block"
+    <section class="hidden overflow-hidden rounded-3xl border border-brand-light/45 bg-surface lg:block"
         aria-label="Tabela de transações">
         <header
             class="grid grid-cols-[minmax(220px,1.35fr)_minmax(120px,0.8fr)_minmax(140px,0.8fr)_minmax(140px,0.8fr)_110px] gap-4 border-b border-brand-light/50 px-6 py-4">

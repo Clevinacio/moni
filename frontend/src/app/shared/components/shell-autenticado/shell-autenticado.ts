@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { Bell, DoorOpen, LogOut, LucideAngularModule } from 'lucide-angular';
+import { Bell, DoorOpen, LogOut, LucideAngularModule, Moon, Sun } from 'lucide-angular';
 
 import { AuthStore } from '../../../store/auth/auth-store';
+import { PreferenciaUiStore } from '../../../store/preferencia-ui/preferencia-ui-store';
 
 type ItemNavegacao = Readonly<{
   titulo: string;
@@ -22,10 +23,15 @@ type ItemNavegacao = Readonly<{
 export class ShellAutenticadoComponent {
   private readonly authStore = inject(AuthStore);
   private readonly roteador = inject(Router);
+  private readonly preferenciaUiStore = inject(PreferenciaUiStore);
 
   readonly iconeNotificacao = Bell;
   readonly iconeSair = LogOut;
   readonly iconePorta = DoorOpen;
+  readonly iconeLua = Moon;
+  readonly iconeSol = Sun;
+  readonly temaEscuroAtivo = this.preferenciaUiStore.temaEscuroAtivo;
+  readonly rotuloAlternadorTema = this.preferenciaUiStore.temaAtualDescricao;
 
   readonly navegacaoLateral: readonly ItemNavegacao[] = [
     {
@@ -85,5 +91,9 @@ export class ShellAutenticadoComponent {
   sair(): void {
     this.authStore.limparSessao();
     this.roteador.navigate(['/auth/login']);
+  }
+
+  alternarTema(): void {
+    this.preferenciaUiStore.alternarTema();
   }
 }

@@ -3,6 +3,31 @@
 @config "../tailwind.config.ts";
 
 @layer base {
+  :root {
+    color-scheme: light;
+    --color-brand-dark: 53 88 114;
+    --color-brand: 122 170 206;
+    --color-brand-light: 156 213 255;
+    --color-background: 247 248 240;
+    --color-surface: 255 255 255;
+    --color-success: 74 124 89;
+    --color-error: 184 74 74;
+    --color-alert: 217 160 91;
+  }
+
+  .dark {
+    color-scheme: dark;
+    --color-brand-dark: 228 238 247;
+    --color-brand: 124 183 226;
+    --color-brand-light: 91 130 161;
+    --color-background: 18 24 32;
+    --color-surface: 26 35 48;
+    --color-success: 97 184 124;
+    --color-error: 232 120 120;
+    --color-alert: 232 181 116;
+  }
+
+  html,
   body {
     @apply font-sans bg-background text-brand-dark antialiased;
   }

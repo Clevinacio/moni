@@ -3,7 +3,7 @@
     <label for="categoriaId" class="text-sm font-semibold text-brand-dark">Categoria</label>
     <div class="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
         <select id="categoriaId" [formControl]="controleCategoriaId"
-            class="min-h-11 rounded-xl border border-brand-light bg-white px-3 py-2.5 text-brand-dark transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            class="min-h-11 rounded-xl border border-brand-light bg-surface px-3 py-2.5 text-brand-dark transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
             [attr.aria-invalid]="invalidoCategoriaId">
             <option value="">Selecione</option>
             @for (categoria of categorias; track categoria.id) {

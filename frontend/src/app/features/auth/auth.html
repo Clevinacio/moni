@@ -1,7 +1,17 @@
 <div class="flex w-full max-w-3xl flex-col items-center gap-6">
-  <header class="text-center">
-    <p class="m-0 text-[0.84rem] font-extrabold uppercase tracking-[0.08em] text-brand-dark">Moni</p>
-    <p class="mt-1.5 text-[0.95rem] text-brand-dark/75">Controle financeiro pessoal simples e acessível.</p>
+  <header class="w-full">
+    <div class="flex items-center justify-end">
+      <button type="button" (click)="alternarTema()"
+        class="inline-flex size-11 items-center justify-center rounded-full border border-brand-light/60 bg-surface text-brand-dark transition hover:bg-brand-light/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+        [attr.aria-label]="rotuloAlternadorTema()">
+        <lucide-icon [img]="temaEscuroAtivo() ? iconeSol : iconeLua" class="size-5" aria-hidden="true"></lucide-icon>
+      </button>
+    </div>
+
+    <div class="mt-2 text-center">
+      <p class="m-0 text-[0.84rem] font-extrabold uppercase tracking-[0.08em] text-brand-dark">Moni</p>
+      <p class="mt-1.5 text-[0.95rem] text-brand-dark/75">Controle financeiro pessoal simples e acessível.</p>
+    </div>
   </header>
 
   <section class="w-full" aria-label="Fluxo de autenticação">

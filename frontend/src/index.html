@@ -4,6 +4,29 @@
 <head>
   <meta charset="utf-8">
   <title>Moni</title>
+  <script>
+    (function () {
+      var chavePreferencia = 'moni.ui.theme.dark';
+      var preferenciaSalva = null;
+
+      try {
+        preferenciaSalva = localStorage.getItem(chavePreferencia);
+      } catch {
+        preferenciaSalva = null;
+      }
+
+      var temaEscuroAtivo = preferenciaSalva === 'true';
+      var temaDefinidoPeloUsuario = preferenciaSalva === 'true' || preferenciaSalva === 'false';
+
+      if (!temaDefinidoPeloUsuario && window.matchMedia) {
+        temaEscuroAtivo = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      }
+
+      if (temaEscuroAtivo) {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">

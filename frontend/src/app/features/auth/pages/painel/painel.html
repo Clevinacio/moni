@@ -1,8 +1,8 @@
 <section aria-labelledby="titulo-painel" class="grid gap-5">
     <header
-        class="rounded-3xl border border-brand-light/45 bg-white p-5 shadow-[0_12px_28px_rgba(53,88,114,0.08)] sm:p-6">
+        class="rounded-3xl border border-brand-light/45 bg-surface p-5 shadow-[0_12px_28px_rgba(53,88,114,0.08)] dark:shadow-[0_12px_28px_rgba(0,0,0,0.3)] sm:p-6">
         <h1 id="titulo-painel" class="m-0 text-[1.9rem] font-semibold leading-tight text-brand-dark sm:text-[2rem]">
-            Visão geral do painel
+            Visão geral das minhas finanças
         </h1>
         <p class="m-0 mt-2 text-sm text-brand-dark/75">
             Acompanhe saldo, gastos por categoria, metas e contas pendentes.
@@ -40,7 +40,7 @@
             </article>
 
             <article
-                class="rounded-3xl border border-brand-light/45 bg-white p-5 shadow-[0_12px_24px_rgba(53,88,114,0.08)] sm:p-6">
+                class="rounded-3xl border border-brand-light/45 bg-surface p-5 shadow-[0_12px_24px_rgba(53,88,114,0.08)] dark:shadow-[0_12px_24px_rgba(0,0,0,0.28)] sm:p-6">
                 <header class="flex items-center justify-between gap-3">
                     <h2 class="m-0 text-[1.75rem] font-semibold text-brand-dark">Meus Gastos</h2>
                     <a routerLink="/transacoes"
@@ -59,7 +59,7 @@
                     <div class="flex items-center justify-center">
                         <div class="relative size-44 rounded-full" [style.background]="graficoDonutBackground()"
                             aria-label="Distribuição de despesas por categoria" role="img">
-                            <div class="absolute inset-[1.2rem] grid place-items-center rounded-full bg-white">
+                            <div class="absolute inset-[1.2rem] grid place-items-center rounded-full bg-surface">
                                 <span class="text-center text-sm font-semibold text-brand-dark">
                                     Total
                                     <strong class="block text-xl">100%</strong>
@@ -90,7 +90,7 @@
             </article>
 
             <article
-                class="rounded-3xl border border-brand-light/45 bg-white p-5 shadow-[0_12px_24px_rgba(53,88,114,0.08)] sm:p-6">
+                class="rounded-3xl border border-brand-light/45 bg-surface p-5 shadow-[0_12px_24px_rgba(53,88,114,0.08)] dark:shadow-[0_12px_24px_rgba(0,0,0,0.28)] sm:p-6">
                 <header class="mb-4 flex items-center justify-between gap-2">
                     <h2 class="m-0 text-[1.75rem] font-semibold text-brand-dark">Metas</h2>
                     <span
@@ -120,7 +120,7 @@
         </div>
 
         <aside
-            class="rounded-3xl border border-brand-light/45 bg-white p-5 shadow-[0_12px_24px_rgba(53,88,114,0.08)] sm:p-6">
+            class="rounded-3xl border border-brand-light/45 bg-surface p-5 shadow-[0_12px_24px_rgba(53,88,114,0.08)] dark:shadow-[0_12px_24px_rgba(0,0,0,0.28)] sm:p-6">
             <header class="mb-4 flex items-center justify-between gap-3">
                 <h2 class="m-0 text-3xl font-semibold leading-none text-brand-dark">Próximas Contas</h2>
                 <span class="whitespace-nowrap rounded-full bg-error/15 px-3 py-1 text-xs font-semibold text-error">
