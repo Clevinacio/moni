@@ -14,6 +14,9 @@ import com.moni.dto.CriarTransacaoRequest;
 import com.moni.dto.TransacaoResponse;
 import com.moni.entity.Categoria;
 import com.moni.entity.CategoriaRepository;
+import com.moni.entity.Meta;
+import com.moni.entity.MetaRepository;
+import com.moni.entity.TipoTransacao;
 import com.moni.entity.Transacao;
 import com.moni.entity.TransacaoRepository;
 import com.moni.entity.Usuario;
@@ -31,6 +34,8 @@ public class TransacaoService {
     private final TransacaoRepository transacaoRepository;
     private final CategoriaRepository categoriaRepository;
     private final UsuarioRepository usuarioRepository;
+    private final MetaRepository metaRepository;
+    private final NotificacaoService notificacaoService;
     private final TransacaoMapper transacaoMapper;
 
     @Transactional
@@ -38,6 +43,7 @@ public class TransacaoService {
         UUID usuarioId = extrairUsuarioId(autenticacao);
         Usuario usuario = buscarUsuario(usuarioId);
         Categoria categoria = buscarOuCriarCategoria(usuario, requisicao.categoria());
+        Meta meta = buscarMetaSeInformada(usuarioId, requisicao.tipo(), requisicao.metaId());
 
         Transacao transacao = new Transacao(
                 requisicao.descricao().trim(),
@@ -45,7 +51,10 @@ public class TransacaoService {
                 requisicao.data(),
                 requisicao.tipo(),
                 categoria,
-                usuario);
+                usuario,
+                meta);
+
+        adicionarAporteEmMetaSeAplicavel(meta, requisicao.tipo(), requisicao.valor());
 
         Transacao transacaoSalva = transacaoRepository.save(transacao);
         return transacaoMapper.paraResponse(transacaoSalva);
@@ -109,13 +118,22 @@ public class TransacaoService {
             throw new AcessoNegadoException("Acesso negado para esta transacao.");
         }
 
+        Meta metaAnterior = transacao.getMeta();
+        TipoTransacao tipoAnterior = transacao.getTipo();
+        var valorAnterior = transacao.getValor();
+
         Categoria categoria = buscarOuCriarCategoria(usuario, requisicao.categoria());
+        Meta metaAtual = buscarMetaSeInformada(usuarioId, requisicao.tipo(), requisicao.metaId());
+
+        removerAporteDaMetaSeAplicavel(metaAnterior, tipoAnterior, valorAnterior);
         transacao.atualizar(
                 requisicao.descricao().trim(),
                 requisicao.valor(),
                 requisicao.data(),
                 requisicao.tipo(),
-                categoria);
+                categoria,
+                metaAtual);
+        adicionarAporteEmMetaSeAplicavel(metaAtual, requisicao.tipo(), requisicao.valor());
 
         return transacaoMapper.paraResponse(transacao);
     }
@@ -130,7 +148,53 @@ public class TransacaoService {
             throw new AcessoNegadoException("Acesso negado para esta transacao.");
         }
 
+        removerAporteDaMetaSeAplicavel(transacao.getMeta(), transacao.getTipo(), transacao.getValor());
+
         transacaoRepository.delete(transacao);
+    }
+
+    private Meta buscarMetaSeInformada(UUID usuarioId, TipoTransacao tipo, String metaId) {
+        if (metaId == null || metaId.isBlank()) {
+            return null;
+        }
+
+        if (tipo != TipoTransacao.RECEITA) {
+            throw new IllegalArgumentException("Meta so pode ser informada para transacoes do tipo RECEITA.");
+        }
+
+        UUID metaUuid;
+        try {
+            metaUuid = UUID.fromString(metaId);
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalArgumentException("Meta id invalida.");
+        }
+
+        return metaRepository.findByIdAndUsuarioId(metaUuid, usuarioId)
+                .orElseThrow(() -> new AcessoNegadoException("Acesso negado para esta meta."));
+    }
+
+    private void removerAporteDaMetaSeAplicavel(Meta meta, TipoTransacao tipo, java.math.BigDecimal valor) {
+        if (meta == null || tipo != TipoTransacao.RECEITA) {
+            return;
+        }
+
+        meta.removerValorPoupado(valor);
+    }
+
+    private void adicionarAporteEmMetaSeAplicavel(Meta meta, TipoTransacao tipo, java.math.BigDecimal valor) {
+        if (meta == null || tipo != TipoTransacao.RECEITA) {
+            return;
+        }
+
+        java.math.BigDecimal valorAnterior = meta.getValorPoupado();
+        meta.adicionarValorPoupado(valor);
+
+        boolean metaAtingidaAgora = valorAnterior.compareTo(meta.getValorAlvo()) < 0
+                && meta.getValorPoupado().compareTo(meta.getValorAlvo()) >= 0;
+
+        if (metaAtingidaAgora) {
+            notificacaoService.notificarMetaAtingida(meta);
+        }
     }
 
     private Usuario buscarUsuario(UUID usuarioId) {

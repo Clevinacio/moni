@@ -71,13 +71,14 @@ class TransacaoContratoApiTest {
         assertCabecalhoJson(resposta);
 
         Map<String, Object> corpo = lerJsonComoMapa(resposta.body());
-        assertEquals(6, corpo.size());
+        assertEquals(7, corpo.size());
         assertCampoTextoNaoVazio(corpo, "id");
         assertCampoTextoNaoVazio(corpo, "descricao");
         assertCampoPresenteENaoNulo(corpo, "valor");
         assertCampoTextoNaoVazio(corpo, "data");
         assertCampoTextoNaoVazio(corpo, "tipo");
         assertCampoTextoNaoVazio(corpo, "categoria");
+        assertTrue(corpo.containsKey("metaId"));
     }
 
     @Test

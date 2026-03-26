@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { CurrencyPipe } from '@angular/common';
 import {
   FormControl,
   FormGroup,
@@ -17,11 +18,13 @@ import {
   PayloadTransacao,
   Transacao,
 } from '../../../../models/transacao.models';
+import { Meta } from '../../../../models/meta.models';
 import { InputFormularioComponent } from '../../../../shared/components/input-formulario/input-formulario';
 import { BotaoSubmitComponent } from '../../../../shared/components/botao-submit/botao-submit';
 import { CampoCategoriaTransacaoComponent } from '../../../../shared/components/campo-categoria-transacao/campo-categoria-transacao';
 import { ServicoTransacoes } from '../../service/servico-transacoes';
 import { ServicoCategorias } from '../../service/servico-categorias';
+import { ServicoMetas } from '../../../metas/service/servico-metas';
 import { FiltrosTransacoesComponent } from '../../ui/filtros-transacoes/filtros-transacoes';
 import { ListaTransacoesComponent } from '../../ui/lista-transacoes/lista-transacoes';
 import { TransacoesStore } from '../../../../store/transacoes/transacoes-store';
@@ -34,6 +37,8 @@ type FormularioTransacao = {
   tipo: FormControl<string>;
   categoriaId: FormControl<string>;
   categoriaNome: FormControl<string>;
+  direcionarParaMeta: FormControl<boolean>;
+  metaId: FormControl<string>;
 };
 
 type TipoFiltroVisual = 'TODAS' | 'RECEITA' | 'DESPESA';
@@ -49,6 +54,7 @@ type FiltroConsolidadoVisual = {
   selector: 'app-pagina-transacoes',
   imports: [
     ReactiveFormsModule,
+    CurrencyPipe,
     LucideAngularModule,
     InputFormularioComponent,
     BotaoSubmitComponent,
@@ -66,6 +72,7 @@ export class PaginaTransacoes {
   private readonly construtorFormulario = inject(NonNullableFormBuilder);
   private readonly servicoTransacoes = inject(ServicoTransacoes);
   private readonly servicoCategorias = inject(ServicoCategorias);
+  private readonly servicoMetas = inject(ServicoMetas);
   private readonly transacoesStore = inject(TransacoesStore);
 
   readonly formulario: FormGroup<FormularioTransacao> = this.construtorFormulario.group({
@@ -78,6 +85,8 @@ export class PaginaTransacoes {
     tipo: this.construtorFormulario.control('', [Validators.required]),
     categoriaId: this.construtorFormulario.control('', [Validators.required]),
     categoriaNome: this.construtorFormulario.control('', [Validators.maxLength(100)]),
+    direcionarParaMeta: this.construtorFormulario.control(false),
+    metaId: this.construtorFormulario.control(''),
   });
 
   readonly carregando = this.transacoesStore.carregando;
@@ -93,6 +102,7 @@ export class PaginaTransacoes {
   readonly filtroVisualTipo = signal<TipoFiltroVisual>('TODAS');
   readonly modoNovaCategoria = signal(false);
   readonly categorias = signal<Categoria[]>([]);
+  readonly metas = signal<Meta[]>([]);
   readonly filtrosDesktopExpandido = signal(true);
 
   readonly iconeAdicionar = Plus;
@@ -112,9 +122,11 @@ export class PaginaTransacoes {
   });
 
   readonly totalTransacoesVisiveis = computed(() => this.transacoesFiltradas().length);
+  readonly metasAtivas = computed(() => this.metas().filter((meta) => meta.valorPoupado < meta.valorAlvo));
 
   constructor() {
     this.carregarCategorias();
+    this.carregarMetas();
     this.listar();
   }
 
@@ -139,9 +151,12 @@ export class PaginaTransacoes {
       tipo: '',
       categoriaId: '',
       categoriaNome: '',
+      direcionarParaMeta: false,
+      metaId: '',
     });
     this.modoNovaCategoria.set(false);
     this.atualizarValidadoresCategoria();
+    this.atualizarValidadoresMeta();
     this.abrirModalTransacao();
   }
 
@@ -202,6 +217,9 @@ export class PaginaTransacoes {
       ? this.servicoTransacoes.atualizar(idEmEdicao, payload)
       : this.servicoTransacoes.criar(payload);
 
+    const metasAntes = this.metas();
+    const metaIdVinculada = payload.metaId;
+
     operacao.pipe(finalize(() => this.transacoesStore.definirCarregando(false))).subscribe({
       next: () => {
         this.formulario.reset({
@@ -211,14 +229,26 @@ export class PaginaTransacoes {
           tipo: '',
           categoriaId: '',
           categoriaNome: '',
+          direcionarParaMeta: false,
+          metaId: '',
         });
         this.modoNovaCategoria.set(false);
         this.atualizarValidadoresCategoria();
+        this.atualizarValidadoresMeta();
         this.carregarCategorias();
+        this.carregarMetas(() => {
+          const mensagemMetaConcluida = this.criarMensagemMetaConcluida(
+            metaIdVinculada,
+            metasAntes,
+            this.metas(),
+          );
 
-        this.transacoesStore.definirSucesso(
-          idEmEdicao ? 'Transação atualizada com sucesso.' : 'Transação criada com sucesso.',
-        );
+          this.transacoesStore.definirSucesso(
+            mensagemMetaConcluida ??
+              (idEmEdicao ? 'Transação atualizada com sucesso.' : 'Transação criada com sucesso.'),
+          );
+        });
+
         this.transacoesStore.definirEmEdicao(null);
         this.modalTransacaoAberto.set(false);
         this.listar();
@@ -243,6 +273,8 @@ export class PaginaTransacoes {
       tipo: transacao.tipo,
       categoriaId: '',
       categoriaNome: '',
+      direcionarParaMeta: Boolean(transacao.metaId),
+      metaId: transacao.metaId ?? '',
     });
 
     const categoriaExistente = this.categorias().find(
@@ -260,8 +292,26 @@ export class PaginaTransacoes {
     }
 
     this.atualizarValidadoresCategoria();
+    this.atualizarValidadoresMeta();
 
     this.modalTransacaoAberto.set(true);
+  }
+
+  onAlterarTipo(): void {
+    if (this.formulario.controls.tipo.value !== 'RECEITA') {
+      this.formulario.controls.direcionarParaMeta.setValue(false);
+      this.formulario.controls.metaId.setValue('');
+    }
+
+    this.atualizarValidadoresMeta();
+  }
+
+  onAlternarDirecionamentoMeta(): void {
+    if (!this.formulario.controls.direcionarParaMeta.value) {
+      this.formulario.controls.metaId.setValue('');
+    }
+
+    this.atualizarValidadoresMeta();
   }
 
   excluirTransacao(id: string): void {
@@ -295,6 +345,10 @@ export class PaginaTransacoes {
   campoInvalido(campo: keyof FormularioTransacao): 'true' | 'false' {
     const controle = this.formulario.controls[campo];
     return controle.touched && controle.invalid ? 'true' : 'false';
+  }
+
+  mostrarDirecionamentoMeta(): boolean {
+    return this.formulario.controls.tipo.value === 'RECEITA' && this.metasAtivas().length > 0;
   }
 
   private listar(filtro?: FiltrosTransacao): void {
@@ -349,6 +403,45 @@ export class PaginaTransacoes {
     });
   }
 
+  private carregarMetas(aoConcluir?: () => void): void {
+    this.servicoMetas.listar().subscribe({
+      next: (lista) => {
+        this.metas.set(lista);
+        aoConcluir?.();
+      },
+      error: () => {
+        this.metas.set([]);
+        aoConcluir?.();
+      },
+    });
+  }
+
+  private criarMensagemMetaConcluida(
+    metaIdVinculada: string | undefined,
+    metasAntes: readonly Meta[],
+    metasDepois: readonly Meta[],
+  ): string | null {
+    if (!metaIdVinculada) {
+      return null;
+    }
+
+    const metaAntes = metasAntes.find((meta) => meta.id === metaIdVinculada);
+    const metaDepois = metasDepois.find((meta) => meta.id === metaIdVinculada);
+
+    if (!metaAntes || !metaDepois) {
+      return null;
+    }
+
+    const estavaIncompleta = metaAntes.valorPoupado < metaAntes.valorAlvo;
+    const foiConcluida = metaDepois.valorPoupado >= metaDepois.valorAlvo;
+
+    if (estavaIncompleta && foiConcluida) {
+      return `Transação salva. Notificação: a meta "${metaDepois.nome}" foi concluída.`;
+    }
+
+    return null;
+  }
+
   private montarPayload(): PayloadTransacao {
     const valores = this.formulario.getRawValue();
 
@@ -357,6 +450,7 @@ export class PaginaTransacoes {
       valor: valores.valor,
       data: valores.data,
       tipo: valores.tipo as PayloadTransacao['tipo'],
+      ...(this.deveEnviarMetaId() ? { metaId: valores.metaId } : {}),
       categoria: this.modoNovaCategoria()
         ? {
             nome: valores.categoriaNome.trim(),
@@ -381,5 +475,22 @@ export class PaginaTransacoes {
 
     this.formulario.controls.categoriaId.updateValueAndValidity({ emitEvent: false });
     this.formulario.controls.categoriaNome.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private atualizarValidadoresMeta(): void {
+    if (this.deveEnviarMetaId()) {
+      this.formulario.controls.metaId.setValidators([Validators.required]);
+    } else {
+      this.formulario.controls.metaId.clearValidators();
+    }
+
+    this.formulario.controls.metaId.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private deveEnviarMetaId(): boolean {
+    return (
+      this.formulario.controls.tipo.value === 'RECEITA' &&
+      this.formulario.controls.direcionarParaMeta.value === true
+    );
   }
 }

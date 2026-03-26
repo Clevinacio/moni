@@ -1,0 +1,56 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-criar-tabela-notificacoes
+      author: cleverton
+      changes:
+        - createTable:
+            tableName: notificacoes
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_notificacoes
+              - column:
+                  name: mensagem
+                  type: VARCHAR(220)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: tipo
+                  type: VARCHAR(40)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: lida
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: criada_em
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: usuario_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: notificacoes
+            baseColumnNames: usuario_id
+            referencedTableName: usuarios
+            referencedColumnNames: id
+            constraintName: fk_notificacoes_usuario
+            onDelete: CASCADE
+        - createIndex:
+            tableName: notificacoes
+            indexName: idx_notificacoes_usuario_criada_em
+            columns:
+              - column:
+                  name: usuario_id
+              - column:
+                  name: criada_em

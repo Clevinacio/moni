@@ -1,0 +1,89 @@
+<section aria-labelledby="titulo-metas" class="mx-auto w-full pb-24 lg:pb-2">
+    <header
+        class="mb-5 grid gap-3 rounded-3xl border border-brand-light/45 bg-surface p-5 shadow-[0_12px_28px_rgba(53,88,114,0.08)] sm:p-6">
+        <div class="flex items-start justify-between gap-3">
+            <div>
+                <h1 id="titulo-metas" class="m-0 text-4xl font-semibold leading-none text-brand-dark sm:text-[2.8rem]">
+                    Metas
+                </h1>
+                <p class="m-0 mt-2 text-sm text-brand-dark/70">
+                    Organize seus objetivos e acompanhe o valor poupado em cada meta.
+                </p>
+            </div>
+
+            <button type="button" (click)="abrirNovaMeta()"
+                class="hidden min-h-11 items-center gap-2 rounded-full bg-brand-dark px-5 py-2 text-sm font-semibold text-background transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand lg:inline-flex">
+                <lucide-icon [img]="iconeAdicionar" class="size-4" aria-hidden="true"></lucide-icon>
+                Nova meta
+            </button>
+        </div>
+
+        <article class="rounded-2xl border border-brand-light/40 bg-background/70 p-4">
+            <p class="m-0 text-xs font-semibold uppercase tracking-[0.11em] text-brand-dark/65">Economias totais</p>
+            <p class="m-0 mt-2 text-4xl font-semibold text-brand-dark">{{ totalValorPoupado() | currency: 'BRL' }}</p>
+        </article>
+    </header>
+
+    @if (temMensagemSucesso()) {
+    <p class="mt-4 rounded-xl border border-success/30 bg-success/10 px-3 py-2 text-sm font-semibold text-success"
+        role="status" aria-live="polite">
+        {{ mensagemSucesso() }}
+    </p>
+    }
+
+    @if (temMensagemErro()) {
+    <p class="mt-4 rounded-xl border border-error/30 bg-error/10 px-3 py-2 text-sm font-semibold text-error"
+        role="alert" aria-live="assertive">
+        {{ mensagemErro() }}
+    </p>
+    }
+
+    @if (carregando() && metas().length === 0) {
+    <p class="mt-5 rounded-2xl border border-brand-light/45 bg-surface px-4 py-3 text-sm font-semibold text-brand-dark"
+        role="status" aria-live="polite">
+        Carregando metas...
+    </p>
+    } @else if (metas().length === 0) {
+    <article
+        class="mt-5 rounded-2xl border border-dashed border-brand-light/60 bg-surface p-5 text-center text-brand-dark/75">
+        <p class="m-0 text-base font-semibold">Nenhuma meta cadastrada ainda.</p>
+        <p class="m-0 mt-1 text-sm">Crie sua primeira meta para começar a acompanhar suas economias.</p>
+    </article>
+    } @else {
+    <div class="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        @for (meta of metas(); track meta.id) {
+        <app-card-meta [meta]="meta" (editar)="editarMeta($event)" (excluir)="excluirMeta($event)" />
+        }
+    </div>
+    }
+
+    <button type="button" (click)="abrirNovaMeta()"
+        class="fixed right-5 bottom-24 z-10 inline-flex size-16 items-center justify-center rounded-[1.7rem] bg-brand text-background shadow-[0_10px_22px_rgba(53,88,114,0.28)] transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand lg:hidden"
+        aria-label="Adicionar meta">
+        <lucide-icon [img]="iconeAdicionar" class="size-7" aria-hidden="true"></lucide-icon>
+    </button>
+
+    @if (modalAberto()) {
+    <div class="fixed inset-0 z-40 bg-brand-dark/50" (click)="fecharModal()" aria-hidden="true"></div>
+    <section role="dialog" aria-modal="true" aria-labelledby="titulo-modal-meta"
+        class="fixed inset-x-3 top-6 z-50 max-h-[calc(100dvh-3rem)] overflow-auto rounded-3xl border border-brand-light/50 bg-surface p-5 shadow-[0_28px_60px_rgba(22,37,50,0.35)] sm:inset-x-[12%] lg:left-1/2 lg:top-1/2 lg:w-full lg:max-w-3xl lg:-translate-x-1/2 lg:-translate-y-1/2">
+        <div class="mb-4 flex items-start justify-between gap-2">
+            <div>
+                <h2 id="titulo-modal-meta" class="m-0 text-2xl font-semibold text-brand-dark">{{ tituloModal() }}</h2>
+                <p class="m-0 mt-1 text-sm text-brand-dark/70">
+                    Defina o objetivo e acompanhe o progresso automaticamente pelas receitas direcionadas.
+                </p>
+            </div>
+
+            <button type="button" (click)="fecharModal()"
+                class="inline-flex size-11 items-center justify-center rounded-full border border-brand-light/60 bg-background text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                aria-label="Fechar modal de meta">
+                <lucide-icon [img]="iconeFechar" class="size-5" aria-hidden="true"></lucide-icon>
+            </button>
+        </div>
+
+        <app-formulario-meta [formulario]="formulario" [carregando]="carregando()"
+            [emEdicao]="metaEmEdicaoId() !== null" (salvar)="salvarMeta()" (cancelar)="fecharModal()" />
+    </section>
+    }
+</section>

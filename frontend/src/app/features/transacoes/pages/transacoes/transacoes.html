@@ -118,7 +118,7 @@
 
             <div class="grid gap-1.5">
                 <label for="tipo" class="text-sm font-semibold text-brand-dark">Tipo</label>
-                <select id="tipo" formControlName="tipo"
+                <select id="tipo" formControlName="tipo" (change)="onAlterarTipo()"
                     class="min-h-11 rounded-xl border border-brand-light bg-surface px-3 py-2.5 text-brand-dark transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                     <option value="">Selecione</option>
                     <option value="RECEITA">Receita</option>
@@ -129,6 +129,40 @@
                 <p class="m-0 text-xs font-semibold text-error" role="alert">Tipo é obrigatório.</p>
                 }
             </div>
+
+            @if (mostrarDirecionamentoMeta()) {
+            <div class="grid gap-3 rounded-2xl border border-brand-light/50 bg-background/70 p-4">
+                <label class="inline-flex cursor-pointer items-center justify-between gap-3">
+                    <span class="text-sm font-semibold text-brand-dark">Direcionar esta receita para uma meta</span>
+                    <input type="checkbox" class="size-5 accent-brand" formControlName="direcionarParaMeta"
+                        (change)="onAlternarDirecionamentoMeta()" aria-label="Direcionar receita para uma meta" />
+                </label>
+
+                @if (formulario.controls.direcionarParaMeta.value) {
+                <div class="grid gap-1.5">
+                    <label for="metaId" class="text-sm font-semibold text-brand-dark">Meta</label>
+                    <select id="metaId" formControlName="metaId"
+                        class="min-h-11 rounded-xl border border-brand-light bg-surface px-3 py-2.5 text-brand-dark transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                        <option value="">Selecione uma meta</option>
+                        @for (meta of metasAtivas(); track meta.id) {
+                        <option [value]="meta.id">{{ meta.nome }} ({{ meta.valorPoupado | currency: 'BRL' }} / {{
+                            meta.valorAlvo | currency: 'BRL' }})</option>
+                        }
+                    </select>
+
+                    @if (campoInvalido('metaId') === 'true') {
+                    <p class="m-0 text-xs font-semibold text-error" role="alert">Meta é obrigatória quando o
+                        direcionamento está ativo.</p>
+                    }
+
+                    @if (metasAtivas().length === 0) {
+                    <p class="m-0 text-xs text-brand-dark/70">Não há metas ativas no momento. Crie uma meta para
+                        direcionar receitas.</p>
+                    }
+                </div>
+                }
+            </div>
+            }
 
             <div class="flex flex-wrap gap-2">
                 <app-botao-submit [rotuloPadrao]="transacaoEmEdicaoId() ? 'Salvar alterações' : 'Salvar transação'"

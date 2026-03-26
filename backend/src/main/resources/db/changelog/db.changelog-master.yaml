@@ -5,3 +5,9 @@ databaseChangeLog:
       file: db/changelog/changes/002-criar-tabela-categorias.yaml
   - include:
       file: db/changelog/changes/003-criar-tabela-transacoes.yaml
+  - include:
+      file: db/changelog/changes/004-criar-tabela-metas.yaml
+  - include:
+      file: db/changelog/changes/005-adicionar-meta-id-transacoes.yaml
+  - include:
+      file: db/changelog/changes/006-criar-tabela-notificacoes.yaml

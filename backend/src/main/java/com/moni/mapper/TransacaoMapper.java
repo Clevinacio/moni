@@ -12,6 +12,7 @@ public interface TransacaoMapper {
 
     @Mapping(target = "id", expression = "java(transacao.getId() != null ? transacao.getId().toString() : null)")
     @Mapping(target = "categoria", source = "categoria.nome")
+    @Mapping(target = "metaId", expression = "java(transacao.getMeta() != null ? transacao.getMeta().getId().toString() : null)")
     TransacaoResponse paraResponse(Transacao transacao);
 
     List<TransacaoResponse> paraResponses(List<Transacao> transacoes);

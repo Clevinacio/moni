@@ -1,9 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, forkJoin } from 'rxjs';
 
+import { Meta } from '../../../../models/meta.models';
 import { Transacao } from '../../../../models/transacao.models';
 import { extrairMensagemErroTransacao } from '../../../../shared/utils/mensagem-erro-transacao';
+import { ServicoMetas } from '../../../metas/service/servico-metas';
 import { ServicoTransacoes } from '../../../transacoes/service/servico-transacoes';
 
 type CategoriaResumo = Readonly<{
@@ -38,6 +40,7 @@ type ContaPendente = Readonly<{
 })
 export class PaginaPainel {
   private readonly servicoTransacoes = inject(ServicoTransacoes);
+  private readonly servicoMetas = inject(ServicoMetas);
   private readonly formatadorMoeda = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
@@ -48,25 +51,7 @@ export class PaginaPainel {
   readonly carregandoResumo = signal(false);
   readonly mensagemErroResumo = signal<string | null>(null);
   readonly transacoes = signal<readonly Transacao[]>([]);
-
-  readonly metasMock = [
-    {
-      titulo: 'Viagem 2024',
-      descricao: 'R$ 12.000 de R$ 20.000',
-      percentual: 60,
-      valorAtual: 12000,
-      valorObjetivo: 20000,
-      corBarra: 'bg-brand-dark',
-    },
-    {
-      titulo: 'Novo MacBook',
-      descricao: 'R$ 4.500 de R$ 15.000',
-      percentual: 30,
-      valorAtual: 4500,
-      valorObjetivo: 15000,
-      corBarra: 'bg-success',
-    },
-  ] as const satisfies readonly MetaPainel[];
+  readonly metas = signal<readonly Meta[]>([]);
 
   readonly contasPendentesMock = [
     {
@@ -109,6 +94,53 @@ export class PaginaPainel {
       saldo: totais.receitas - totais.despesas,
     };
   });
+
+  readonly totalEntradas = computed(() =>
+    this.transacoes()
+      .filter((transacao) => transacao.tipo === 'RECEITA')
+      .reduce((acumulador, transacao) => acumulador + transacao.valor, 0),
+  );
+
+  readonly totalDespesas = computed(() =>
+    this.transacoes()
+      .filter((transacao) => transacao.tipo === 'DESPESA')
+      .reduce((acumulador, transacao) => acumulador + transacao.valor, 0),
+  );
+
+  readonly totalReceitasDirecionadas = computed(() =>
+    this.transacoes()
+      .filter((transacao) => transacao.tipo === 'RECEITA' && Boolean(transacao.metaId))
+      .reduce((acumulador, transacao) => acumulador + transacao.valor, 0),
+  );
+
+  readonly saldoDisponivel = computed(
+    () => this.totalEntradas() - (this.totalDespesas() + this.totalReceitasDirecionadas()),
+  );
+
+  readonly totalEconomias = computed(() =>
+    this.metas().reduce((acumulador, meta) => acumulador + meta.valorPoupado, 0),
+  );
+
+  readonly patrimonioTotal = computed(() => this.saldoDisponivel() + this.totalEconomias());
+
+  readonly metasPainel = computed(
+    () =>
+      this.metas().map((meta, indice) => {
+        const percentual =
+          meta.valorAlvo > 0
+            ? Math.max(0, Math.min(100, Math.round((meta.valorPoupado / meta.valorAlvo) * 100)))
+            : 0;
+
+        return {
+          titulo: meta.nome,
+          descricao: `${this.formatarMoeda(meta.valorPoupado)} de ${this.formatarMoeda(meta.valorAlvo)}`,
+          percentual,
+          valorAtual: meta.valorPoupado,
+          valorObjetivo: meta.valorAlvo,
+          corBarra: indice % 2 === 0 ? 'bg-brand-dark' : 'bg-success',
+        } satisfies MetaPainel;
+      }) satisfies readonly MetaPainel[],
+  );
 
   readonly categoriasDespesas = computed(() => {
     const mapaCategorias = new Map<string, number>();
@@ -177,17 +209,22 @@ export class PaginaPainel {
     this.carregandoResumo.set(true);
     this.mensagemErroResumo.set(null);
 
-    this.servicoTransacoes
-      .listar()
+    forkJoin({
+      transacoes: this.servicoTransacoes.listar(),
+      metas: this.servicoMetas.listar(),
+    })
       .pipe(finalize(() => this.carregandoResumo.set(false)))
       .subscribe({
-        next: (lista) => {
-          this.transacoes.set(lista);
+        next: ({ transacoes, metas }) => {
+          this.transacoes.set(transacoes);
+          this.metas.set(metas);
         },
         error: (erro: unknown) => {
           this.mensagemErroResumo.set(
             extrairMensagemErroTransacao(erro, 'Não foi possível carregar os dados do painel.'),
           );
+          this.transacoes.set([]);
+          this.metas.set([]);
         },
       });
   }

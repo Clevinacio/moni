@@ -1,0 +1,55 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-criar-tabela-metas
+      author: cleverton
+      changes:
+        - createTable:
+            tableName: metas
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_metas
+              - column:
+                  name: nome
+                  type: VARCHAR(120)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: valor_alvo
+                  type: NUMERIC(19,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: valor_poupado
+                  type: NUMERIC(19,2)
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: usuario_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: metas
+            baseColumnNames: usuario_id
+            referencedTableName: usuarios
+            referencedColumnNames: id
+            constraintName: fk_metas_usuario
+            onDelete: CASCADE
+        - addUniqueConstraint:
+            tableName: metas
+            columnNames: usuario_id, nome
+            constraintName: uk_metas_usuario_nome
+        - createIndex:
+            tableName: metas
+            indexName: idx_metas_usuario_nome
+            columns:
+              - column:
+                  name: usuario_id
+              - column:
+                  name: nome

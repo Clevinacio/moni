@@ -52,12 +52,15 @@ function normalizarPayload(payload: PayloadTransacao): PayloadTransacao {
     ? { id: payload.categoria.id }
     : { nome: payload.categoria.nome };
 
+  const metaId = payload.metaId?.trim();
+
   return {
     descricao: payload.descricao,
     valor: payload.valor,
     data: payload.data,
     tipo: payload.tipo,
     categoria,
+    ...(metaId ? { metaId } : {}),
   };
 }
 
@@ -96,9 +99,9 @@ function validarTransacao(valor: unknown, contexto: string): Transacao {
     throw new Error(`Resposta de ${contexto} inválida: esperado objeto JSON.`);
   }
 
-  validarCamposEstritos(valor, ['id', 'descricao', 'valor', 'data', 'tipo', 'categoria'], contexto);
+  validarCamposEstritos(valor, ['id', 'descricao', 'valor', 'data', 'tipo', 'categoria', 'metaId'], contexto);
 
-  const { id, descricao, valor: valorTransacao, data, tipo, categoria } = valor;
+  const { id, descricao, valor: valorTransacao, data, tipo, categoria, metaId } = valor;
 
   if (
     !ehTexto(id) ||
@@ -106,7 +109,8 @@ function validarTransacao(valor: unknown, contexto: string): Transacao {
     !ehNumero(valorTransacao) ||
     !ehTexto(data) ||
     !ehTipoTransacao(tipo) ||
-    !ehTexto(categoria)
+    !ehTexto(categoria) ||
+    !ehMetaIdOpcional(metaId)
   ) {
     throw new Error(`Resposta de ${contexto} inválida: campos obrigatórios ausentes ou inválidos.`);
   }
@@ -118,6 +122,7 @@ function validarTransacao(valor: unknown, contexto: string): Transacao {
     data,
     tipo,
     categoria,
+    metaId,
   };
 }
 
@@ -152,6 +157,10 @@ function ehTexto(valor: unknown): valor is string {
 
 function ehRegistro(valor: unknown): valor is Record<string, unknown> {
   return typeof valor === 'object' && valor !== null;
+}
+
+function ehMetaIdOpcional(valor: unknown): valor is string | null {
+  return valor === null || ehTexto(valor);
 }
 
 function normalizarPrefixoApi(apiUrl: string): string {

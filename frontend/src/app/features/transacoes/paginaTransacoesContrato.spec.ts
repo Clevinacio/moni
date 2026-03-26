@@ -38,6 +38,7 @@ interface SuportePaginaTransacoes {
 const caminhoModuloPaginaTransacoes = './pages/transacoes/transacoes';
 const caminhoModuloServicoTransacoes = './service/servico-transacoes';
 const caminhoModuloServicoCategorias = './service/servico-categorias';
+const caminhoModuloServicoMetas = '../metas/service/servico-metas';
 const caminhoTemplatePaginaTransacoes =
   'src/app/features/transacoes/pages/transacoes/transacoes.html';
 
@@ -318,6 +319,35 @@ describe('RF02 - Contrato da PaginaTransacoes futura (TDD RED)', () => {
 
     expect(suporte.chamadasListar).toEqual([undefined, undefined]);
   });
+
+  it('deve enviar metaId quando receita for direcionada para meta', async () => {
+    const suporte = await criarSuportePaginaTransacoes();
+    const formulario = resolverFormulario(suporte.componente, 'PaginaTransacoes');
+
+    formulario.patchValue({
+      descricao: 'Bonus trimestral',
+      valor: 2200,
+      data: '2026-03-21',
+      tipo: 'RECEITA',
+      categoriaId: 'cat-01',
+      categoriaNome: '',
+      direcionarParaMeta: true,
+      metaId: 'meta-01',
+    });
+
+    await suporte.submeter();
+
+    expect(suporte.chamadasCriar[0]).toEqual({
+      descricao: 'Bonus trimestral',
+      valor: 2200,
+      data: '2026-03-21',
+      tipo: 'RECEITA',
+      metaId: 'meta-01',
+      categoria: {
+        id: 'cat-01',
+      },
+    });
+  });
 });
 
 async function criarSuportePaginaTransacoes(): Promise<SuportePaginaTransacoes> {
@@ -335,6 +365,11 @@ async function criarSuportePaginaTransacoes(): Promise<SuportePaginaTransacoes> 
     caminhoModuloServicoCategorias,
     'ServicoCategorias',
     'ServicoCategorias',
+  );
+  const tipoServicoMetas = await carregarClasseContrato(
+    caminhoModuloServicoMetas,
+    'ServicoMetas',
+    'ServicoMetas',
   );
 
   const chamadasCriar: Array<Record<string, unknown>> = [];
@@ -375,6 +410,14 @@ async function criarSuportePaginaTransacoes(): Promise<SuportePaginaTransacoes> 
       ]),
   };
 
+  const stubServicoMetas = {
+    listar: (): Observable<unknown> =>
+      of([
+        { id: 'meta-01', nome: 'Reserva', valorAlvo: 5000, valorPoupado: 1500 },
+        { id: 'meta-02', nome: 'Viagem', valorAlvo: 10000, valorPoupado: 10000 },
+      ]),
+  };
+
   await resolveComponentResources(resolverTemplatePaginaTransacoes);
 
   TestBed.configureTestingModule({
@@ -387,6 +430,10 @@ async function criarSuportePaginaTransacoes(): Promise<SuportePaginaTransacoes> 
       {
         provide: tipoServicoCategorias,
         useValue: stubServicoCategorias,
+      },
+      {
+        provide: tipoServicoMetas,
+        useValue: stubServicoMetas,
       },
     ],
   });
@@ -431,6 +478,7 @@ function construirTransacaoResposta(id: string, payload: unknown): Record<string
     data: dados['data'] ?? '2026-03-20',
     tipo: dados['tipo'] ?? 'RECEITA',
     categoria,
+    metaId: dados['metaId'] ?? null,
   };
 }
 

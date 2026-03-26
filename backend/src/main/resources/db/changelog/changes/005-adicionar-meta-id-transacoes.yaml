@@ -1,0 +1,26 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-adicionar-meta-id-transacoes
+      author: cleverton
+      changes:
+        - addColumn:
+            tableName: transacoes
+            columns:
+              - column:
+                  name: meta_id
+                  type: UUID
+                  constraints:
+                    nullable: true
+        - addForeignKeyConstraint:
+            baseTableName: transacoes
+            baseColumnNames: meta_id
+            referencedTableName: metas
+            referencedColumnNames: id
+            constraintName: fk_transacoes_meta
+            onDelete: SET NULL
+        - createIndex:
+            tableName: transacoes
+            indexName: idx_transacoes_meta_id
+            columns:
+              - column:
+                  name: meta_id

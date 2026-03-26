@@ -16,6 +16,7 @@ export type PayloadTransacao = Readonly<{
   data: string;
   tipo: TipoTransacao;
   categoria: CategoriaPayloadTransacao;
+  metaId?: string;
 }>;
 
 export type FiltroPeriodoTransacao = Readonly<{
@@ -49,4 +50,5 @@ export type Transacao = Readonly<{
   data: string;
   tipo: TipoTransacao;
   categoria: string;
+  metaId?: string | null;
 }>;

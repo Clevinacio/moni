@@ -46,7 +46,8 @@ export class ShellAutenticadoComponent {
     },
     {
       titulo: 'Metas',
-      subtitulo: 'Em breve',
+      subtitulo: 'Objetivos',
+      rota: '/metas',
     },
     {
       titulo: 'Faturas',
@@ -67,7 +68,8 @@ export class ShellAutenticadoComponent {
     },
     {
       titulo: 'Metas',
-      subtitulo: 'Em breve',
+      subtitulo: 'Objetivos',
+      rota: '/metas',
     },
     {
       titulo: 'Faturas',

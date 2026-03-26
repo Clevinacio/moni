@@ -53,7 +53,7 @@ interface SuporteServicoTransacoes {
 
 const caminhoModuloServicoTransacoes = './service/servico-transacoes';
 const endpointTransacoes = '/api/v1/transactions';
-const camposTransacaoEsperados = ['categoria', 'data', 'descricao', 'id', 'tipo', 'valor'] as const;
+const camposTransacaoEsperados = ['categoria', 'data', 'descricao', 'id', 'metaId', 'tipo', 'valor'] as const;
 
 describe('RF02 - Contrato do ServicoTransacoes futuro (TDD RED)', () => {
   afterEach(() => {
@@ -482,6 +482,7 @@ function construirTransacaoRespostaValida(): Record<string, unknown> {
     data: '2026-03-20',
     tipo: 'RECEITA',
     categoria: 'Trabalho',
+    metaId: null,
   };
 }
 
@@ -526,6 +527,10 @@ function validarTransacaoEstrita(valor: unknown, contexto: string): void {
 
   if (!ehTipoTransacao(valor['tipo'])) {
     throw new Error(`Resposta de ${contexto} invalida: tipo deve ser RECEITA ou DESPESA.`);
+  }
+
+  if (!(valor['metaId'] === null || ehTexto(valor['metaId']))) {
+    throw new Error(`Resposta de ${contexto} invalida: metaId deve ser string ou null.`);
   }
 }
 

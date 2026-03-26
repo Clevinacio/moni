@@ -7,6 +7,7 @@ import java.util.Objects;
 import com.moni.configuration.exception.AcessoNegadoException;
 import com.moni.configuration.exception.CredenciaisInvalidasException;
 import com.moni.configuration.exception.EmailJaCadastradoException;
+import com.moni.configuration.exception.MetaNaoEncontradaException;
 import com.moni.configuration.exception.TransacaoNaoEncontradaException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -65,6 +66,11 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(TransacaoNaoEncontradaException.class)
 	public ResponseEntity<ErroApiResponse> tratarTransacaoNaoEncontrada(TransacaoNaoEncontradaException exception) {
+		return resposta(HttpStatus.NOT_FOUND, exception.getMessage());
+	}
+
+	@ExceptionHandler(MetaNaoEncontradaException.class)
+	public ResponseEntity<ErroApiResponse> tratarMetaNaoEncontrada(MetaNaoEncontradaException exception) {
 		return resposta(HttpStatus.NOT_FOUND, exception.getMessage());
 	}
 

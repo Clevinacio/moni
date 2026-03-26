@@ -17,6 +17,7 @@ type Transacao = Readonly<{
 
 const caminhoModuloPainel = './pages/painel/painel';
 const caminhoModuloServicoTransacoes = '../transacoes/service/servico-transacoes';
+const caminhoModuloServicoMetas = '../metas/service/servico-metas';
 const caminhoTemplatePainel = 'src/app/features/auth/pages/painel/painel.html';
 
 function resolverTemplatePainel(url: string): Promise<string> {
@@ -107,6 +108,11 @@ async function criarSuportePaginaPainel(transacoes: readonly Transacao[]): Promi
     'ServicoTransacoes',
     'ServicoTransacoes',
   );
+  const tipoServicoMetas = await carregarClasseContrato(
+    caminhoModuloServicoMetas,
+    'ServicoMetas',
+    'ServicoMetas',
+  );
 
   const stubAuthStore = {
     autenticado: signal(true),
@@ -116,6 +122,10 @@ async function criarSuportePaginaPainel(transacoes: readonly Transacao[]): Promi
 
   const stubServicoTransacoes = {
     listar: () => of(transacoes),
+  };
+
+  const stubServicoMetas = {
+    listar: () => of([]),
   };
 
   await resolveComponentResources(resolverTemplatePainel);
@@ -131,6 +141,10 @@ async function criarSuportePaginaPainel(transacoes: readonly Transacao[]): Promi
       {
         provide: tipoServicoTransacoes,
         useValue: stubServicoTransacoes,
+      },
+      {
+        provide: tipoServicoMetas,
+        useValue: stubServicoMetas,
       },
     ],
   });

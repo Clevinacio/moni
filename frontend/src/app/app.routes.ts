@@ -30,6 +30,11 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/transacoes/transacoes.routes').then((modulo) => modulo.transacoesRoutes),
       },
+      {
+        path: 'metas',
+        loadChildren: () =>
+          import('./features/metas/metas.routes').then((modulo) => modulo.metasRoutes),
+      },
     ],
   },
   {

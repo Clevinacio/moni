@@ -51,21 +51,37 @@ public class Transacao {
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "meta_id", nullable = true)
+    private Meta meta;
+
     public Transacao(String descricao, BigDecimal valor, LocalDate data, TipoTransacao tipo, Categoria categoria,
             Usuario usuario) {
+        this(descricao, valor, data, tipo, categoria, usuario, null);
+    }
+
+    public Transacao(String descricao, BigDecimal valor, LocalDate data, TipoTransacao tipo, Categoria categoria,
+            Usuario usuario, Meta meta) {
         this.descricao = descricao;
         this.valor = valor;
         this.data = data;
         this.tipo = tipo;
         this.categoria = categoria;
         this.usuario = usuario;
+        this.meta = meta;
     }
 
     public void atualizar(String descricao, BigDecimal valor, LocalDate data, TipoTransacao tipo, Categoria categoria) {
+        atualizar(descricao, valor, data, tipo, categoria, null);
+    }
+
+    public void atualizar(String descricao, BigDecimal valor, LocalDate data, TipoTransacao tipo, Categoria categoria,
+            Meta meta) {
         this.descricao = descricao;
         this.valor = valor;
         this.data = data;
         this.tipo = tipo;
         this.categoria = categoria;
+        this.meta = meta;
     }
 }

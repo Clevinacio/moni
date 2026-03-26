@@ -15,6 +15,24 @@ export class TransacoesStore {
 
   readonly totalTransacoes = computed(() => this.transacoes().length);
   readonly emEdicao = computed(() => this.transacaoEmEdicaoId() !== null);
+  readonly totalEntradas = computed(() =>
+    this.transacoes()
+      .filter((transacao) => transacao.tipo === 'RECEITA')
+      .reduce((acumulador, transacao) => acumulador + transacao.valor, 0),
+  );
+  readonly totalDespesas = computed(() =>
+    this.transacoes()
+      .filter((transacao) => transacao.tipo === 'DESPESA')
+      .reduce((acumulador, transacao) => acumulador + transacao.valor, 0),
+  );
+  readonly totalReceitasDirecionadas = computed(() =>
+    this.transacoes()
+      .filter((transacao) => transacao.tipo === 'RECEITA' && Boolean(transacao.metaId))
+      .reduce((acumulador, transacao) => acumulador + transacao.valor, 0),
+  );
+  readonly saldoDisponivel = computed(
+    () => this.totalEntradas() - (this.totalDespesas() + this.totalReceitasDirecionadas()),
+  );
 
   definirTransacoes(lista: Transacao[]): void {
     this.transacoes.set(lista);
