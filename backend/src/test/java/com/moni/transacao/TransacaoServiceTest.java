@@ -17,6 +17,7 @@ import java.util.UUID;
 import com.moni.configuration.exception.AcessoNegadoException;
 import com.moni.configuration.exception.TransacaoNaoEncontradaException;
 import com.moni.dto.CategoriaTransacaoRequest;
+import com.moni.dto.AtualizarTransacaoRequest;
 import com.moni.dto.CriarTransacaoRequest;
 import com.moni.dto.TransacaoResponse;
 import com.moni.entity.Categoria;
@@ -301,6 +302,7 @@ class TransacaoServiceTest {
 
                 assertEquals(respostaEsperada, resposta);
                 assertEquals(new BigDecimal("2000.00"), meta.getValorPoupado());
+                verify(metaRepository).save(meta);
         }
 
         @Test
@@ -348,6 +350,62 @@ class TransacaoServiceTest {
                 transacaoService.excluir(autenticacao, transacaoId);
 
                 assertEquals(new BigDecimal("1000.00"), meta.getValorPoupado());
+                verify(metaRepository).save(meta);
+        }
+
+        @Test
+        @DisplayName("deve reverter valor poupado ao atualizar receita vinculada para despesa")
+        void deveReverterValorPoupadoAoAtualizarReceitaVinculadaParaDespesa() {
+                UUID usuarioId = UUID.randomUUID();
+                UUID transacaoId = UUID.randomUUID();
+                Authentication autenticacao = autenticacao(usuarioId);
+
+                Usuario usuario = usuarioComId(usuarioId);
+                Categoria categoriaAnterior = categoriaComId("Trabalho", usuario);
+                Categoria categoriaNova = categoriaComId("Moradia", usuario);
+                Meta meta = metaComId("Viagem", new BigDecimal("5000.00"), new BigDecimal("1200.00"), usuario);
+
+                Transacao transacao = new Transacao(
+                                "Freelance",
+                                new BigDecimal("200.00"),
+                                LocalDate.of(2026, 3, 20),
+                                TipoTransacao.RECEITA,
+                                categoriaAnterior,
+                                usuario,
+                                meta);
+                ReflectionTestUtils.setField(transacao, "id", transacaoId);
+
+                AtualizarTransacaoRequest requisicao = new AtualizarTransacaoRequest(
+                                "Conta de luz",
+                                new BigDecimal("150.00"),
+                                LocalDate.of(2026, 3, 21),
+                                TipoTransacao.DESPESA,
+                                new CategoriaTransacaoRequest(categoriaNova.getId().toString(), null),
+                                null);
+
+                TransacaoResponse respostaEsperada = new TransacaoResponse(
+                                transacaoId.toString(),
+                                "Conta de luz",
+                                new BigDecimal("150.00"),
+                                LocalDate.of(2026, 3, 21),
+                                TipoTransacao.DESPESA,
+                                "Moradia",
+                                null);
+
+                when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
+                when(transacaoRepository.findById(transacaoId)).thenReturn(Optional.of(transacao));
+                when(categoriaRepository.findByIdAndUsuarioId(categoriaNova.getId(), usuarioId))
+                                .thenReturn(Optional.of(categoriaNova));
+                when(transacaoMapper.paraResponse(transacao)).thenReturn(respostaEsperada);
+
+                TransacaoResponse resposta = transacaoService.atualizar(autenticacao, transacaoId, requisicao);
+
+                assertEquals(respostaEsperada, resposta);
+                assertEquals(new BigDecimal("1000.00"), meta.getValorPoupado());
+                verify(metaRepository).save(meta);
+                assertEquals(TipoTransacao.DESPESA, transacao.getTipo());
+                assertEquals(categoriaNova, transacao.getCategoria());
+                assertEquals(null, transacao.getMeta());
         }
 
         private Authentication autenticacao(UUID usuarioId) {

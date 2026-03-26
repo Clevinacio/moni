@@ -33,6 +33,7 @@ type ContaPendente = Readonly<{
 @Component({
   selector: 'app-painel',
   templateUrl: './painel.html',
+  imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'block w-full',

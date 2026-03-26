@@ -218,6 +218,15 @@ Regra respeitada:
 
 2. GREEN
 
+## Atualizacao de UX monetaria (2026-03-26)
+
+- Os campos monetarios de formularios passaram a usar mascara com simbolo `R$` durante digitacao.
+- O componente compartilhado de input agora aplica a diretiva de mascara de forma deterministica quando `mascaraMoeda=true`.
+- O valor enviado ao backend continua numerico (sem simbolo), preservando o contrato da API.
+- Campos validados nesta atualizacao:
+  - formulario de transacoes (`valor`)
+  - formulario de metas (`valorAlvo`)
+
 - Implementados service, store, pagina e componentes da feature.
 - Ajustes de contrato de URL/recursos de template para suite ficar verde.
 

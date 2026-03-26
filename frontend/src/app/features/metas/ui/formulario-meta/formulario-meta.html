@@ -6,8 +6,9 @@
 				maxlength: 'Nome deve ter no máximo 120 caracteres.'
 			}" />
 
-        <app-input-formulario id="meta-valor" rotulo="Valor alvo" tipo="number" ajuda="Informe um valor maior que zero."
-            [invalido]="campoInvalido('valorAlvo')" [controle]="formulario.controls.valorAlvo" [mensagensErro]="{
+        <app-input-formulario id="meta-valor" rotulo="Valor alvo" tipo="text" [mascaraMoeda]="true"
+            ajuda="Informe um valor maior que zero." [invalido]="campoInvalido('valorAlvo')"
+            [controle]="formulario.controls.valorAlvo" [mensagensErro]="{
 				required: 'Valor alvo é obrigatório.',
 				min: 'Valor alvo deve ser maior que zero.'
 			}" />

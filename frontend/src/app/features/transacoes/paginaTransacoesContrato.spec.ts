@@ -348,6 +348,44 @@ describe('RF02 - Contrato da PaginaTransacoes futura (TDD RED)', () => {
       },
     });
   });
+
+  it('deve manter meta vinculada visivel na edicao mesmo quando ela ja estiver concluida', async () => {
+    const suporte = await criarSuportePaginaTransacoes();
+
+    const metodoEntrarModoEdicao = resolverMetodo(
+      suporte.componente,
+      ['editarTransacao', 'iniciarEdicao', 'selecionarParaEdicao'],
+      'PaginaTransacoes',
+    );
+
+    (suporte.componente as { metas: { set: (valor: unknown) => void } }).metas.set([
+      { id: 'meta-02', nome: 'Viagem', valorAlvo: 10000, valorPoupado: 10000 },
+    ]);
+
+    metodoEntrarModoEdicao({
+      id: 'tx-03',
+      descricao: 'Aporte final',
+      valor: 500,
+      data: '2026-03-22',
+      tipo: 'RECEITA',
+      categoria: 'Trabalho',
+      metaId: 'meta-02',
+    });
+
+    const mostrarDirecionamentoMeta = resolverMetodo(
+      suporte.componente,
+      ['mostrarDirecionamentoMeta'],
+      'PaginaTransacoes',
+    );
+
+    const exibirDirecionamento = mostrarDirecionamentoMeta();
+    expect(exibirDirecionamento).toBe(true);
+
+    const metasDisponiveis = (
+      suporte.componente as { metasDisponiveisParaSelecao: () => Array<{ id: string }> }
+    ).metasDisponiveisParaSelecao();
+    expect(metasDisponiveis.map((meta) => meta.id)).toEqual(['meta-02']);
+  });
 });
 
 async function criarSuportePaginaTransacoes(): Promise<SuportePaginaTransacoes> {

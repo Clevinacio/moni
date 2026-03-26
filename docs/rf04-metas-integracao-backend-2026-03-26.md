@@ -84,3 +84,10 @@ Comando:
 Resultado:
 - Build SUCCESS
 - Todos os testes passando
+
+## Ajuste de consistencia (2026-03-26)
+- Corrigido o fluxo de reversao de `valorPoupado` para transacoes vinculadas a meta quando:
+  - uma receita vinculada e removida;
+  - uma receita vinculada e atualizada para `DESPESA`.
+- No backend, a atualizacao da entidade `Meta` passou a ser persistida explicitamente apos remover/adicionar aporte.
+- No frontend (pagina de transacoes), a lista de metas e recarregada apos exclusao para refletir o novo valor imediatamente na UI.

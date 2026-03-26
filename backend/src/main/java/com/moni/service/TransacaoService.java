@@ -179,6 +179,7 @@ public class TransacaoService {
         }
 
         meta.removerValorPoupado(valor);
+        metaRepository.save(meta);
     }
 
     private void adicionarAporteEmMetaSeAplicavel(Meta meta, TipoTransacao tipo, java.math.BigDecimal valor) {
@@ -188,6 +189,7 @@ public class TransacaoService {
 
         java.math.BigDecimal valorAnterior = meta.getValorPoupado();
         meta.adicionarValorPoupado(valor);
+        metaRepository.save(meta);
 
         boolean metaAtingidaAgora = valorAnterior.compareTo(meta.getValorAlvo()) < 0
                 && meta.getValorPoupado().compareTo(meta.getValorAlvo()) >= 0;

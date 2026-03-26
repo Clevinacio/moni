@@ -1,40 +1,62 @@
-# moni
-Aplicação de gestão financeira pessoal
+# Moni
 
-## Endpoints implementados
+Aplicação de gestão financeira pessoal.
 
-### Autenticação (RF01)
+## Funcionalidades atuais
 
-- `POST /api/v1/auth/register`
-- `POST /api/v1/auth/login`
+- Cadastro e login de usuário com autenticação JWT.
+- Gestão de transações (criar, listar, editar e remover).
+- Filtros de transações por período, tipo e categoria.
+- Gestão de metas financeiras (criar, listar, detalhar, editar e remover).
+- Consulta de categorias para organização de lançamentos.
+- Central de notificações com listagem e remoção de notificações.
 
-Contrato de sucesso do login (`200 OK`):
+## Como rodar o projeto
 
-- `token`
-- `type`
-- `userId`
-- `name`
+### Docker (stack completa)
 
-### Transações (RF02)
+Na raiz do projeto:
 
-- `POST /api/v1/transactions` cria transação (requer JWT)
-- `GET /api/v1/transactions` lista transações do usuário autenticado (requer JWT)
-- `GET /api/v1/transactions?dataInicio=YYYY-MM-DD&dataFim=YYYY-MM-DD` filtra por intervalo
-- `GET /api/v1/transactions?mes=M&ano=YYYY` filtra por mês/ano
-- `PUT /api/v1/transactions/{id}` atualiza transação (requer JWT e ownership)
-- `DELETE /api/v1/transactions/{id}` remove transação (requer JWT e ownership, retorna `204 No Content`)
+```bash
+docker compose --profile test up --build
+```
 
-Campos obrigatórios de transação:
+Serviços:
 
-- `descricao`
-- `valor`
-- `data` (ISO-8601 `YYYY-MM-DD`)
-- `tipo` (`RECEITA` ou `DESPESA`)
-- `categoria`
+- Frontend: http://localhost
+- Backend: http://localhost:8080
 
-## Documentação da API (Swagger / OpenAPI)
+### Local (desenvolvimento)
 
-Com o backend em execução, acesse:
+1. Suba apenas o banco:
 
-- Swagger UI: `http://localhost:8080/swagger-ui.html`
-- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+```bash
+docker compose --profile local up -d moni-db
+```
+
+2. Inicie o backend:
+
+```bash
+cd backend
+SPRING_PROFILES_ACTIVE=local ./mvnw spring-boot:run
+```
+
+3. Em outro terminal, inicie o frontend:
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+URLs locais:
+
+- Frontend: http://localhost:4200
+- Backend: http://localhost:8080
+
+## Documentação da API
+
+Com o backend em execução:
+
+- Swagger UI: http://localhost:8080/swagger-ui.html
+- OpenAPI JSON: http://localhost:8080/v3/api-docs

@@ -1,8 +1,14 @@
 <div class="grid gap-1.5">
   <label [for]="id" class="text-sm font-semibold text-brand-dark">{{ rotulo }}</label>
-  <input [id]="id" [type]="tipo" [autocomplete]="autocomplete" [formControl]="$any(controle)"
+  @if (mascaraMoeda) {
+  <input [id]="id" type="text" [autocomplete]="autocomplete" [formControl]="$any(controle)" appMascaraMoeda
+    inputmode="decimal" [attr.aria-invalid]="invalido" [attr.aria-describedby]="id + '-ajuda ' + id + '-erro'" required
+    class="min-h-11 w-full rounded-xl border border-brand-light bg-surface px-3 py-2.5 text-brand-dark transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand aria-invalid:border-error" />
+  } @else {
+  <input [id]="id" [type]="tipoInput()" [autocomplete]="autocomplete" [formControl]="$any(controle)"
     [attr.aria-invalid]="invalido" [attr.aria-describedby]="id + '-ajuda ' + id + '-erro'" required
     class="min-h-11 w-full rounded-xl border border-brand-light bg-surface px-3 py-2.5 text-brand-dark transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand aria-invalid:border-error" />
+  }
   @if (ajuda) {
   <p [id]="id + '-ajuda'" class="m-0 text-xs text-brand-dark/65">{{ ajuda }}</p>
   }

@@ -31,6 +31,7 @@ public class SecurityConfig {
 
 	private static final String[] ROTAS_PUBLICAS = {
 			AutenticacaoEndpoints.ROTA_PUBLICA,
+			"/ws/notificacoes/**",
 			"/v3/api-docs/**",
 			"/swagger-ui/**",
 			"/swagger-ui.html"

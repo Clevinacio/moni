@@ -1,9 +1,11 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { AbstractControl, ReactiveFormsModule } from '@angular/forms';
 
+import { MascaraMoedaDirective } from '../../directives/mascara-moeda.directive';
+
 @Component({
   selector: 'app-input-formulario',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, MascaraMoedaDirective],
   templateUrl: './input-formulario.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -13,6 +15,7 @@ export class InputFormularioComponent implements OnChanges {
   @Input() tipo: string = 'text';
   @Input() autocomplete: string = 'off';
   @Input() ajuda: string = '';
+  @Input() mascaraMoeda: boolean = false;
   @Input() invalido: 'true' | 'false' = 'false';
   @Input({ required: true }) controle!: AbstractControl;
   @Input() mensagensErro: Record<string, string> = {};
@@ -21,6 +24,10 @@ export class InputFormularioComponent implements OnChanges {
 
   ngOnChanges(): void {
     this.atualizarErros();
+  }
+
+  tipoInput(): string {
+    return this.mascaraMoeda ? 'text' : this.tipo;
   }
 
   private atualizarErros(): void {

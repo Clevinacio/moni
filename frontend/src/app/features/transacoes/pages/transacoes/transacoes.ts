@@ -123,6 +123,26 @@ export class PaginaTransacoes {
 
   readonly totalTransacoesVisiveis = computed(() => this.transacoesFiltradas().length);
   readonly metasAtivas = computed(() => this.metas().filter((meta) => meta.valorPoupado < meta.valorAlvo));
+  readonly metasDisponiveisParaSelecao = computed(() => {
+    const metaIdSelecionada = this.formulario.controls.metaId.value;
+    const metasAtivas = this.metasAtivas();
+
+    if (!metaIdSelecionada) {
+      return metasAtivas;
+    }
+
+    const metaSelecionada = this.metas().find((meta) => meta.id === metaIdSelecionada);
+    if (!metaSelecionada) {
+      return metasAtivas;
+    }
+
+    const metaSelecionadaJaAtiva = metasAtivas.some((meta) => meta.id === metaSelecionada.id);
+    if (metaSelecionadaJaAtiva) {
+      return metasAtivas;
+    }
+
+    return [metaSelecionada, ...metasAtivas];
+  });
 
   constructor() {
     this.carregarCategorias();
@@ -217,9 +237,6 @@ export class PaginaTransacoes {
       ? this.servicoTransacoes.atualizar(idEmEdicao, payload)
       : this.servicoTransacoes.criar(payload);
 
-    const metasAntes = this.metas();
-    const metaIdVinculada = payload.metaId;
-
     operacao.pipe(finalize(() => this.transacoesStore.definirCarregando(false))).subscribe({
       next: () => {
         this.formulario.reset({
@@ -236,18 +253,11 @@ export class PaginaTransacoes {
         this.atualizarValidadoresCategoria();
         this.atualizarValidadoresMeta();
         this.carregarCategorias();
-        this.carregarMetas(() => {
-          const mensagemMetaConcluida = this.criarMensagemMetaConcluida(
-            metaIdVinculada,
-            metasAntes,
-            this.metas(),
-          );
+        this.carregarMetas();
 
-          this.transacoesStore.definirSucesso(
-            mensagemMetaConcluida ??
-              (idEmEdicao ? 'Transação atualizada com sucesso.' : 'Transação criada com sucesso.'),
-          );
-        });
+        this.transacoesStore.definirSucesso(
+          idEmEdicao ? 'Transação atualizada com sucesso.' : 'Transação criada com sucesso.',
+        );
 
         this.transacoesStore.definirEmEdicao(null);
         this.modalTransacaoAberto.set(false);
@@ -325,6 +335,7 @@ export class PaginaTransacoes {
       .subscribe({
         next: () => {
           this.transacoesStore.definirSucesso('Transação excluída com sucesso.');
+          this.carregarMetas();
           this.listar();
         },
         error: (erro: unknown) => {
@@ -348,7 +359,12 @@ export class PaginaTransacoes {
   }
 
   mostrarDirecionamentoMeta(): boolean {
-    return this.formulario.controls.tipo.value === 'RECEITA' && this.metasAtivas().length > 0;
+    return (
+      this.formulario.controls.tipo.value === 'RECEITA' &&
+      (this.metasAtivas().length > 0 ||
+        this.formulario.controls.direcionarParaMeta.value ||
+        this.formulario.controls.metaId.value.length > 0)
+    );
   }
 
   private listar(filtro?: FiltrosTransacao): void {
@@ -414,32 +430,6 @@ export class PaginaTransacoes {
         aoConcluir?.();
       },
     });
-  }
-
-  private criarMensagemMetaConcluida(
-    metaIdVinculada: string | undefined,
-    metasAntes: readonly Meta[],
-    metasDepois: readonly Meta[],
-  ): string | null {
-    if (!metaIdVinculada) {
-      return null;
-    }
-
-    const metaAntes = metasAntes.find((meta) => meta.id === metaIdVinculada);
-    const metaDepois = metasDepois.find((meta) => meta.id === metaIdVinculada);
-
-    if (!metaAntes || !metaDepois) {
-      return null;
-    }
-
-    const estavaIncompleta = metaAntes.valorPoupado < metaAntes.valorAlvo;
-    const foiConcluida = metaDepois.valorPoupado >= metaDepois.valorAlvo;
-
-    if (estavaIncompleta && foiConcluida) {
-      return `Transação salva. Notificação: a meta "${metaDepois.nome}" foi concluída.`;
-    }
-
-    return null;
   }
 
   private montarPayload(): PayloadTransacao {
