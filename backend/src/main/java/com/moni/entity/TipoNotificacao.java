@@ -1,5 +1,6 @@
 package com.moni.entity;
 
 public enum TipoNotificacao {
-    META_ATINGIDA
+    META_ATINGIDA,
+    FATURA_VENCIMENTO
 }

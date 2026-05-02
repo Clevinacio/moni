@@ -1,0 +1,91 @@
+<div class="container mx-auto p-4 max-w-4xl animate-fade-in">
+  <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Faturas e Vencimentos</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Gerencie suas contas a pagar</p>
+    </div>
+    
+    <div class="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 px-4 py-2 rounded-lg font-semibold min-h-[44px] flex items-center justify-center">
+      Pendente: {{ store.valorTotalNaoPago() | currency:'BRL' }}
+    </div>
+  </div>
+
+  <!-- Mensagens de Alerta -->
+  <div *ngIf="store.mensagemErro()" class="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
+    {{ store.mensagemErro() }}
+  </div>
+  <div *ngIf="store.mensagemSucesso()" class="mb-4 p-4 bg-green-100 text-green-700 rounded-lg">
+    {{ store.mensagemSucesso() }}
+  </div>
+
+  <!-- Formulario de Nova Fatura -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-8">
+    <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white flex items-center gap-2">
+      <lucide-icon [name]="icones.PlusCircle" class="w-5 h-5 text-brand-600"></lucide-icon>
+      Nova Fatura
+    </h2>
+    
+    <form [formGroup]="form" (ngSubmit)="adicionarFatura()" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Descrição</label>
+        <input type="text" formControlName="descricao" class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-brand-500 min-h-[44px]" placeholder="Ex: Conta de Luz">
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Valor (R$)</label>
+        <input type="number" formControlName="valor" class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-brand-500 min-h-[44px]" placeholder="0.00" step="0.01">
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Vencimento</label>
+        <input type="date" formControlName="dataVencimento" class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-brand-500 min-h-[44px]">
+      </div>
+      
+      <div class="md:col-span-4 flex justify-end mt-2">
+        <button type="submit" [disabled]="form.invalid || store.carregando()" class="bg-brand-600 hover:bg-brand-700 text-white font-medium py-2 px-6 rounded-lg transition-colors min-h-[44px] disabled:opacity-50">
+          Adicionar Fatura
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Lista de Faturas -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+    <div *ngIf="store.carregando() && store.faturas().length === 0" class="p-8 text-center text-gray-500">
+      Carregando faturas...
+    </div>
+    
+    <div *ngIf="!store.carregando() && store.faturas().length === 0" class="p-8 text-center text-gray-500">
+      Nenhuma fatura cadastrada.
+    </div>
+
+    <ul class="divide-y divide-gray-100 dark:divide-gray-700">
+      <li *ngFor="let fatura of store.faturas()" class="p-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+               [ngClass]="fatura.paga ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' : 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'">
+            <lucide-icon [name]="fatura.paga ? icones.CheckCircle : icones.Clock" class="w-5 h-5"></lucide-icon>
+          </div>
+          <div>
+            <h3 class="font-medium text-gray-900 dark:text-white" [class.line-through]="fatura.paga" [class.text-gray-400]="fatura.paga">{{ fatura.descricao }}</h3>
+            <p class="text-sm text-gray-500" [class.text-red-500]="!fatura.paga && fatura.dataVencimento < hoje">Vence em: {{ fatura.dataVencimento | date:'dd/MM/yyyy' }}</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto">
+          <span class="font-semibold text-gray-900 dark:text-white">{{ fatura.valor | currency:'BRL' }}</span>
+          
+          <button *ngIf="!fatura.paga" (click)="pagarFatura(fatura.id)" [disabled]="store.carregando()" 
+                  class="bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-1.5 px-4 rounded-lg transition-colors min-h-[44px] flex items-center gap-2">
+            Marcar como Paga
+          </button>
+          
+          <span *ngIf="fatura.paga" class="text-green-600 text-sm font-medium px-4 py-1.5 flex items-center gap-1">
+            Pago
+          </span>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>

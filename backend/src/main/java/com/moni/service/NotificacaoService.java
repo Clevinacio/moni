@@ -32,6 +32,15 @@ public class NotificacaoService {
         mensageria.convertAndSendToUser(meta.getUsuario().getId().toString(), "/queue/notificacoes", resposta);
     }
 
+    @Transactional
+    public void notificarFatura(com.moni.entity.Fatura fatura, String mensagem) {
+        Notificacao notificacao = new Notificacao(mensagem, TipoNotificacao.FATURA_VENCIMENTO, fatura.getUsuario());
+        Notificacao notificacaoSalva = notificacaoRepository.save(notificacao);
+        NotificacaoResponse resposta = paraResponse(notificacaoSalva);
+
+        mensageria.convertAndSendToUser(fatura.getUsuario().getId().toString(), "/queue/notificacoes", resposta);
+    }
+
     @Transactional(readOnly = true)
     public List<NotificacaoResponse> listar(Authentication autenticacao) {
         UUID usuarioId = extrairUsuarioId(autenticacao);

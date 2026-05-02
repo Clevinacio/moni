@@ -1,0 +1,6 @@
+- **RF05: Faturas e Vencimentos**:
+- Cadastro de contas a pagar com Data de Vencimento.
+- Marcação de status "Pago", atualizando o saldo e gerando transação automática de despesa.
+- Ao se aproximar 5 dias da data de vencimento, caso não marcada como paga, uma notificação deve ser disparada informando
+- No dia do vencimento, caso não marcada como paga, uma notificação também deve ser disparada
+- Após o vencimento, caso não marcada como paga, deve ser disparada uma notificação.
