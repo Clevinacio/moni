@@ -1,6 +1,7 @@
-<div class="flex w-full max-w-3xl flex-col items-center gap-6">
+<div
+  class="flex w-full max-w-3xl flex-col items-center gap-6 lg:mx-auto lg:min-h-[calc(100dvh-2rem)] lg:justify-center">
   <header class="w-full">
-    <div class="flex items-center justify-end">
+    <div class="flex items-center justify-end lg:fixed lg:top-6 lg:right-6">
       <button type="button" (click)="alternarTema()"
         class="inline-flex size-11 items-center justify-center rounded-full border border-brand-light/60 bg-surface text-brand-dark transition hover:bg-brand-light/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         [attr.aria-label]="rotuloAlternadorTema()">

@@ -6,7 +6,8 @@ export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'auth/login',
+    loadComponent: () =>
+      import('./core/redirect/root-redirect').then((modulo) => modulo.RootRedirectComponent),
   },
   {
     path: 'auth',

@@ -169,3 +169,43 @@ Isso evita regressao no ambiente Vitest sem servidor HTTP para assets.
 - Execucoes realizadas:
 	- `npm run test` -> 7 arquivos de teste, 41 testes passando.
 	- `npm run build` -> build concluido com sucesso.
+
+## Atualizacao 2026-04-09 (Rota raiz e login desktop)
+
+### Navegacao da rota raiz
+
+- A rota raiz `/` deixou de usar redirecionamento fixo para login e passou a usar decisao condicional por sessao:
+	- Sem sessao/token: `/` -> `/auth/login`
+	- Com sessao/token: `/` -> `/painel`
+- Implementacao com componente standalone de redirecionamento:
+	- `frontend/src/app/core/redirect/root-redirect.ts`
+- Integracao de rota atualizada em:
+	- `frontend/src/app/app.routes.ts`
+
+### Controle de acesso ao login
+
+- Usuario autenticado tentando acessar `/auth/login` agora e redirecionado para `/painel`.
+- Implementacao por guard funcional aplicado na rota de login:
+	- `frontend/src/app/core/guards/nao-autenticado-guard.ts`
+	- `frontend/src/app/features/auth/auth.routes.ts`
+
+### Layout desktop da autenticacao
+
+- Container de autenticacao ajustado para centralizacao vertical no desktop.
+- Botao de alternancia de tema posicionado no canto superior direito no desktop, com espacamento da borda da viewport.
+- Ajustes aplicados no template do container:
+	- `frontend/src/app/features/auth/auth.html`
+
+### Testes e validacao
+
+- Novo teste de contrato para o redirecionamento da raiz:
+	- `frontend/src/app/core/redirect/root-redirect.spec.ts`
+	- Cobre ambos os cenarios: com token e sem token.
+- Novo teste para bloqueio de login quando autenticado:
+	- `frontend/src/app/core/guards/nao-autenticado-guard.spec.ts`
+	- Cobre ambos os cenarios: permite login sem sessao e redireciona para painel com sessao.
+- Execucao de testes frontend:
+	- `npm run test` executado anteriormente nesta sessao com suite verde (59 testes).
+	- Novo spec de redirecionamento validado sem erros de TypeScript/template no workspace.
+- Validacao de problemas no workspace:
+	- sem erros de TypeScript/template nos arquivos alterados.

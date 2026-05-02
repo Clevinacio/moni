@@ -3,16 +3,16 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "rootDir": "./src",
     "outDir": "./out-tsc/app",
     "types": [],
-    "baseUrl": "./",
     "paths": {
-      "@app/*": ["src/app/*"],
-      "@core/*": ["src/app/core/*"],
-      "@shared/*": ["src/app/shared/*"],
-      "@models/*": ["src/app/models/*"],
-      "@store/*": ["src/app/store/*"],
-      "@features/*": ["src/app/features/*"]
+      "@app/*": ["./src/app/*"],
+      "@core/*": ["./src/app/core/*"],
+      "@shared/*": ["./src/app/shared/*"],
+      "@models/*": ["./src/app/models/*"],
+      "@store/*": ["./src/app/store/*"],
+      "@features/*": ["./src/app/features/*"]
     }
   },
   "include": ["src/**/*.ts"],

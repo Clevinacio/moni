@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 
+import { naoAutenticadoGuard } from '../../core/guards/nao-autenticado-guard';
+
 export const authRoutes: Routes = [
   {
     path: '',
@@ -12,6 +14,7 @@ export const authRoutes: Routes = [
       },
       {
         path: 'login',
+        canActivate: [naoAutenticadoGuard],
         loadComponent: () => import('./pages/login/login').then((modulo) => modulo.PaginaLogin),
       },
       {
