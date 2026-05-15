@@ -36,6 +36,11 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/metas/metas.routes').then((modulo) => modulo.metasRoutes),
       },
+      {
+        path: 'faturas',
+        loadChildren: () =>
+          import('./features/faturas/faturas.routes').then((modulo) => modulo.FATURAS_ROUTES),
+      },
     ],
   },
   {

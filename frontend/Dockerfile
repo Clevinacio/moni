@@ -3,7 +3,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-RUN npm run build -- --configuration docker
+RUN npm run build:docker
 
 FROM nginx:alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf

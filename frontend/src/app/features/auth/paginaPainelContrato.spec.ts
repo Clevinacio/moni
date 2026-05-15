@@ -18,6 +18,7 @@ type Transacao = Readonly<{
 const caminhoModuloPainel = './pages/painel/painel';
 const caminhoModuloServicoTransacoes = '../transacoes/service/servico-transacoes';
 const caminhoModuloServicoMetas = '../metas/service/servico-metas';
+const caminhoModuloServicoFaturas = '../faturas/service/servico-faturas';
 const caminhoTemplatePainel = 'src/app/features/auth/pages/painel/painel.html';
 
 function resolverTemplatePainel(url: string): Promise<string> {
@@ -78,11 +79,39 @@ describe('RF03 - Contrato visual do painel (TDD)', () => {
     expect(resumo.saldo).toBe(3000);
   });
 
-  it('deve manter total pendente mock conforme layout aprovado', async () => {
-    const suporte = await criarSuportePaginaPainel([]);
+  it('deve calcular total pendente a partir das faturas reais abertas', async () => {
+    const suporte = await criarSuportePaginaPainel(
+      [],
+      [
+        {
+          id: 'f-01',
+          descricao: 'Conta de Luz',
+          valor: 324.15,
+          dataVencimento: '2026-05-20',
+          paga: false,
+        },
+        {
+          id: 'f-02',
+          descricao: 'Internet Fibra',
+          valor: 149.9,
+          dataVencimento: '2026-05-18',
+          paga: false,
+        },
+        {
+          id: 'f-03',
+          descricao: 'Fatura quitada',
+          valor: 2450,
+          dataVencimento: '2026-05-15',
+          paga: true,
+        },
+      ],
+    );
 
-    expect(suporte.componente.totalPendente()).toBe(2924.05);
-    expect(suporte.componente.contasPendentesMock.length).toBe(3);
+    expect(suporte.componente.totalPendente()).toBe(474.05);
+    expect(suporte.componente.contasPendentes().map((conta) => conta.titulo)).toEqual([
+      'Internet Fibra',
+      'Conta de Luz',
+    ]);
   });
 });
 
@@ -94,10 +123,13 @@ type SuportePaginaPainel = {
 type PaginaPainelContrato = {
   resumoFinanceiro: () => { receitas: number; despesas: number; saldo: number };
   totalPendente: () => number;
-  contasPendentesMock: readonly unknown[];
+  contasPendentes: () => readonly { titulo: string }[];
 };
 
-async function criarSuportePaginaPainel(transacoes: readonly Transacao[]): Promise<SuportePaginaPainel> {
+async function criarSuportePaginaPainel(
+  transacoes: readonly Transacao[],
+  faturas: readonly unknown[] = [],
+): Promise<SuportePaginaPainel> {
   const tipoPaginaPainel = await carregarClasseContrato(
     caminhoModuloPainel,
     'PaginaPainel',
@@ -113,6 +145,11 @@ async function criarSuportePaginaPainel(transacoes: readonly Transacao[]): Promi
     'ServicoMetas',
     'ServicoMetas',
   );
+  const tipoServicoFaturas = await carregarClasseContrato(
+    caminhoModuloServicoFaturas,
+    'ServicoFaturas',
+    'ServicoFaturas',
+  );
 
   const stubAuthStore = {
     autenticado: signal(true),
@@ -126,6 +163,10 @@ async function criarSuportePaginaPainel(transacoes: readonly Transacao[]): Promi
 
   const stubServicoMetas = {
     listar: () => of([]),
+  };
+
+  const stubServicoFaturas = {
+    listar: () => of(faturas),
   };
 
   await resolveComponentResources(resolverTemplatePainel);
@@ -145,6 +186,10 @@ async function criarSuportePaginaPainel(transacoes: readonly Transacao[]): Promi
       {
         provide: tipoServicoMetas,
         useValue: stubServicoMetas,
+      },
+      {
+        provide: tipoServicoFaturas,
+        useValue: stubServicoFaturas,
       },
     ],
   });

@@ -73,7 +73,8 @@ export class ShellAutenticadoComponent {
     },
     {
       titulo: 'Faturas',
-      subtitulo: 'Em breve',
+      subtitulo: 'Contas a pagar',
+      rota: '/faturas',
     },
   ];
 
@@ -95,7 +96,8 @@ export class ShellAutenticadoComponent {
     },
     {
       titulo: 'Faturas',
-      subtitulo: 'Em breve',
+      subtitulo: 'Contas a pagar',
+      rota: '/faturas',
     },
   ];
 

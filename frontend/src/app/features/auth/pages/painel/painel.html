@@ -128,12 +128,12 @@
             <header class="mb-4 flex items-center justify-between gap-3">
                 <h2 class="m-0 text-3xl font-semibold leading-none text-brand-dark">Próximas Contas</h2>
                 <span class="whitespace-nowrap rounded-full bg-error/15 px-3 py-1 text-xs font-semibold text-error">
-                    {{ contasPendentesMock.length }} pendentes
+                    {{ contasPendentes().length }} pendentes
                 </span>
             </header>
 
             <div class="grid gap-3">
-                @for (conta of contasPendentesMock; track conta.titulo) {
+                @for (conta of contasPendentes(); track conta.id) {
                 <article
                     class="grid grid-cols-[1fr_auto] items-center gap-3 rounded-2xl border border-brand-light/45 bg-background/60 p-3">
                     <div>
@@ -150,6 +150,10 @@
                         </button>
                     </div>
                 </article>
+                } @empty {
+                <p class="m-0 rounded-2xl border border-dashed border-brand-light/60 bg-background/60 p-4 text-sm text-brand-dark/75">
+                    Nenhuma fatura pendente no momento.
+                </p>
                 }
             </div>
 

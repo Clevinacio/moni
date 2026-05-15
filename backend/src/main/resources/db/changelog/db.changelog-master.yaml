@@ -11,3 +11,5 @@ databaseChangeLog:
       file: db/changelog/changes/005-adicionar-meta-id-transacoes.yaml
   - include:
       file: db/changelog/changes/006-criar-tabela-notificacoes.yaml
+  - include:
+      file: db/changelog/changes/007-criar-tabela-faturas.yaml
