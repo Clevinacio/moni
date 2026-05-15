@@ -2,9 +2,11 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { RouterLink } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
 
+import { Fatura } from '../../../../models/fatura.models';
 import { Meta } from '../../../../models/meta.models';
 import { Transacao } from '../../../../models/transacao.models';
 import { extrairMensagemErroTransacao } from '../../../../shared/utils/mensagem-erro-transacao';
+import { ServicoFaturas } from '../../../faturas/service/servico-faturas';
 import { ServicoMetas } from '../../../metas/service/servico-metas';
 import { ServicoTransacoes } from '../../../transacoes/service/servico-transacoes';
 
@@ -25,6 +27,7 @@ type MetaPainel = Readonly<{
 }>;
 
 type ContaPendente = Readonly<{
+  id: string;
   titulo: string;
   vencimento: string;
   valor: number;
@@ -42,6 +45,7 @@ type ContaPendente = Readonly<{
 export class PaginaPainel {
   private readonly servicoTransacoes = inject(ServicoTransacoes);
   private readonly servicoMetas = inject(ServicoMetas);
+  private readonly servicoFaturas = inject(ServicoFaturas);
   private readonly formatadorMoeda = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
@@ -53,24 +57,7 @@ export class PaginaPainel {
   readonly mensagemErroResumo = signal<string | null>(null);
   readonly transacoes = signal<readonly Transacao[]>([]);
   readonly metas = signal<readonly Meta[]>([]);
-
-  readonly contasPendentesMock = [
-    {
-      titulo: 'Internet Fibra',
-      vencimento: 'Vence em 2 dias',
-      valor: 149.9,
-    },
-    {
-      titulo: 'Conta de Luz',
-      vencimento: 'Vence em 5 dias',
-      valor: 324.15,
-    },
-    {
-      titulo: 'Cartão de Crédito',
-      vencimento: 'Vence em 6 dias',
-      valor: 2450,
-    },
-  ] as const satisfies readonly ContaPendente[];
+  readonly faturas = signal<readonly Fatura[]>([]);
 
   readonly resumoFinanceiro = computed(() => {
     const totais = this.transacoes().reduce(
@@ -194,8 +181,27 @@ export class PaginaPainel {
     return `conic-gradient(${segmentos.join(', ')})`;
   });
 
+  readonly contasPendentes = computed(
+    () =>
+      [...this.faturas()]
+        .filter((fatura) => !fatura.paga)
+        .sort((a, b) => a.dataVencimento.localeCompare(b.dataVencimento))
+        .map(
+          (fatura) =>
+            ({
+              id: fatura.id,
+              titulo: fatura.descricao,
+              vencimento: this.formatarVencimento(fatura.dataVencimento),
+              valor: fatura.valor,
+            }) satisfies ContaPendente,
+        ),
+  );
+
   readonly totalPendente = computed(() =>
-    this.contasPendentesMock.reduce((acumulador, conta) => acumulador + conta.valor, 0),
+    this.contasPendentes().reduce(
+      (acumulador, conta) => acumulador + Math.round(conta.valor * 100),
+      0,
+    ) / 100,
   );
 
   constructor() {
@@ -213,12 +219,14 @@ export class PaginaPainel {
     forkJoin({
       transacoes: this.servicoTransacoes.listar(),
       metas: this.servicoMetas.listar(),
+      faturas: this.servicoFaturas.listar(),
     })
       .pipe(finalize(() => this.carregandoResumo.set(false)))
       .subscribe({
-        next: ({ transacoes, metas }) => {
+        next: ({ transacoes, metas, faturas }) => {
           this.transacoes.set(transacoes);
           this.metas.set(metas);
+          this.faturas.set(faturas);
         },
         error: (erro: unknown) => {
           this.mensagemErroResumo.set(
@@ -226,7 +234,36 @@ export class PaginaPainel {
           );
           this.transacoes.set([]);
           this.metas.set([]);
+          this.faturas.set([]);
         },
       });
   }
+
+  private formatarVencimento(dataVencimento: string): string {
+    const hoje = normalizarDataLocal(new Date());
+    const vencimento = criarDataLocal(dataVencimento);
+    const diferencaDias = Math.round(
+      (vencimento.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24),
+    );
+
+    if (diferencaDias === 0) {
+      return 'Vence hoje';
+    }
+
+    if (diferencaDias < 0) {
+      const diasAtraso = Math.abs(diferencaDias);
+      return diasAtraso === 1 ? 'Atrasada há 1 dia' : `Atrasada há ${diasAtraso} dias`;
+    }
+
+    return diferencaDias === 1 ? 'Vence amanhã' : `Vence em ${diferencaDias} dias`;
+  }
+}
+
+function criarDataLocal(dataIso: string): Date {
+  const [ano, mes, dia] = dataIso.split('-').map(Number);
+  return new Date(ano, mes - 1, dia);
+}
+
+function normalizarDataLocal(data: Date): Date {
+  return new Date(data.getFullYear(), data.getMonth(), data.getDate());
 }

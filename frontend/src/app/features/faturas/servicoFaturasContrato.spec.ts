@@ -43,7 +43,7 @@ describe('ServicoFaturas (Contrato)', () => {
       expect(resultado).toEqual(faturaMock);
     });
 
-    const requisicao = httpTestingController.expectOne('/api/v1/bills');
+    const requisicao = httpTestingController.expectOne((valor) => valor.url.endsWith('/api/v1/bills'));
     expect(requisicao.request.method).toBe('POST');
     expect(requisicao.request.body).toEqual(payload);
     
@@ -57,7 +57,9 @@ describe('ServicoFaturas (Contrato)', () => {
       expect(resultado).toEqual(faturaPaga);
     });
 
-    const requisicao = httpTestingController.expectOne('/api/v1/bills/fatura-123/pay');
+    const requisicao = httpTestingController.expectOne((valor) =>
+      valor.url.endsWith('/api/v1/bills/fatura-123/pay'),
+    );
     expect(requisicao.request.method).toBe('PATCH');
     
     requisicao.flush(faturaPaga);
@@ -70,7 +72,7 @@ describe('ServicoFaturas (Contrato)', () => {
       expect(resultado).toEqual(faturasMock);
     });
 
-    const requisicao = httpTestingController.expectOne('/api/v1/bills');
+    const requisicao = httpTestingController.expectOne((valor) => valor.url.endsWith('/api/v1/bills'));
     expect(requisicao.request.method).toBe('GET');
     
     requisicao.flush(faturasMock);

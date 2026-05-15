@@ -15,10 +15,13 @@ A funcionalidade abrange a criação de faturas, marcação de status "Pago" (qu
 - **Modelos**: Interfaces de DTO e Contrato criadas em `fatura.models.ts`.
 - **State Management (Signals)**: Arquivo `faturas-store.ts` criado utilizando os Signals nativos. Ele gerencia a lista, estados de loading, mensagens de erro, e cálculos comutados para Resumo (Total Pendente, etc).
 - **Service**: `ServicoFaturas` lida com as chamadas de API (`POST /bills`, `PATCH /bills/{id}/pay`, `GET /bills`).
+  - No frontend Docker, as chamadas usam `environment.apiUrl` absoluto para alcançar o backend em `http://localhost:8080/api/v1` e permitir que o interceptor de autenticação aplique o JWT.
 - **Componente de UI (`PaginaFaturas`)**:
-  - Exibe o formulário de cadastro validado e a lista estilizada das faturas ativas com TailwindCSS.
+  - Exibe cadastro validado em modal, acionado por botão desktop e FAB mobile, seguindo o padrão visual das telas de Metas e Transações.
+  - Lista faturas em cards no mobile e tabela no desktop com tokens `brand-*`, `bg-surface`, estados responsivos e área mínima de toque de 44px.
   - Alerta visual no ícone para contas atrasadas.
   - Indicador de sucesso ou erro (WCAG 2.1 AA via Aria Lives).
+- **Dashboard (`PaginaPainel`)**: O bloco "Próximas Contas" consome faturas reais da API, exibe apenas faturas não pagas ordenadas por vencimento e calcula o total pendente a partir desses dados.
 - **Testes (Vitest)**: Todos os testes passados (`servicoFaturasContrato.spec.ts`, `faturas-store.spec.ts` e `paginaFaturasContrato.spec.ts`), garantindo total cobertura do fluxo Red-Green-Refactor em TypeScript.
 
 ## API Endpoints (`/api/v1/bills`)

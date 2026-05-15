@@ -1,9 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FaturasStore } from '../../../../store/faturas/faturas-store';
 import { ServicoFaturas } from '../../service/servico-faturas';
-import { LucideAngularModule, CheckCircle, Clock, PlusCircle } from 'lucide-angular';
+import { LucideAngularModule, CalendarClock, CheckCircle, Clock, Plus, X } from 'lucide-angular';
+import { Fatura } from '../../../../models/fatura.models';
 
 @Component({
   selector: 'app-faturas',
@@ -15,6 +16,7 @@ export class PaginaFaturas implements OnInit {
   store = inject(FaturasStore);
   private servico = inject(ServicoFaturas);
   private fb = inject(FormBuilder);
+  readonly modalFaturaAberto = signal(false);
 
   form: FormGroup = this.fb.group({
     descricao: ['', Validators.required],
@@ -22,7 +24,11 @@ export class PaginaFaturas implements OnInit {
     dataVencimento: ['', Validators.required]
   });
 
-  icones = { CheckCircle, Clock, PlusCircle };
+  readonly iconeAdicionar = Plus;
+  readonly iconeCalendario = CalendarClock;
+  readonly iconeCheck = CheckCircle;
+  readonly iconeFechar = X;
+  readonly iconeRelogio = Clock;
   
   get hoje() {
     return new Date().toISOString().split('T')[0];
@@ -30,6 +36,20 @@ export class PaginaFaturas implements OnInit {
 
   ngOnInit(): void {
     this.carregarFaturas();
+  }
+
+  abrirNovaFatura(): void {
+    this.form.reset();
+    this.modalFaturaAberto.set(true);
+  }
+
+  fecharModalFatura(): void {
+    this.modalFaturaAberto.set(false);
+    this.form.reset();
+  }
+
+  faturaAtrasada(fatura: Fatura): boolean {
+    return !fatura.paga && fatura.dataVencimento < this.hoje;
   }
 
   carregarFaturas(): void {
@@ -54,7 +74,7 @@ export class PaginaFaturas implements OnInit {
       next: (fatura) => {
         this.store.adicionarFatura(fatura);
         this.store.definirSucesso('Fatura criada com sucesso');
-        this.form.reset();
+        this.fecharModalFatura();
         this.store.definirCarregando(false);
       },
       error: () => {
