@@ -28,12 +28,15 @@ jobs:
         with:
           java-version: '25'
           distribution: 'temurin'
-          cache: maven
+          cache: gradle
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Build and Test Backend
         run: |
           cd backend
-          mvn clean verify # Executa build e testes unitários
+          ./gradlew clean build --no-daemon # Executa build e testes unitários
 
   # Validação do Frontend (Angular 21 + Node 22)
   frontend-check:

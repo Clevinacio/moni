@@ -130,11 +130,11 @@ Base: `/api/v1/transactions`
 
 ## Validacao executada
 
-1. `mvnw.cmd -Dtest=TransacaoContratoApiTest test`
+1. `gradlew.bat test --tests TransacaoContratoApiTest`
 
 - Resultado: testes da RF02 em verde
 
-2. `mvnw.cmd test`
+2. `gradlew.bat test`
 
 - Resultado esperado: toda suite backend em verde (incluindo RF01 e RF02)
 
@@ -369,7 +369,7 @@ Comportamento de UI no formulario de transacao:
 
 Backend:
 
-- `mvnw -f backend/pom.xml test -Dtest=TransacaoServiceTest,TransacaoContratoApiTest,CategoriaContratoApiTest`
+- `cd backend && ./gradlew test --tests TransacaoServiceTest --tests TransacaoContratoApiTest --tests CategoriaContratoApiTest`
   - Resultado: `17` testes, `0` falhas.
 
 Frontend:
@@ -381,7 +381,7 @@ Frontend:
 
 Build backend:
 
-- `mvnw -f backend/pom.xml -DskipTests compile`
+- `cd backend && ./gradlew compileJava`
   - Resultado: sucesso.
 
 4. Acao de adicionar transacao dentro da feature
@@ -502,8 +502,8 @@ Frontend:
 
 Backend:
 
-- `./mvnw -Dtest=TransacaoServiceTest test` com sucesso (`7` testes, `0` falhas).
-- `./mvnw test` permanece com falha por problema preexistente de contexto (`No qualifying bean of type 'com.moni.mapper.AutenticacaoMapper'`), nao relacionado a esta alteracao de filtro.
+- `./gradlew test --tests TransacaoServiceTest` com sucesso (`7` testes, `0` falhas).
+- `./gradlew test` permanece com falha por problema preexistente de contexto (`No qualifying bean of type 'com.moni.mapper.AutenticacaoMapper'`), nao relacionado a esta alteracao de filtro.
 
 ## Atualizacao RF02 - Unificacao da filtragem (2026-03-24)
 

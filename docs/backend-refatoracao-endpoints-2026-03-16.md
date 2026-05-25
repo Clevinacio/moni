@@ -46,12 +46,12 @@ Excluido:
 
 1. Testes focados de autenticacao:
 
-- Comando: `cd backend && ./mvnw -Dtest='*Autenticacao*' test`
+- Comando: `cd backend && ./gradlew test --tests "*Autenticacao*"`
 - Resultado: 25 testes executados, 0 falhas
 
 2. Suite backend completa:
 
-- Comando: `cd backend && ./mvnw clean test`
+- Comando: `cd backend && ./gradlew clean test`
 - Resultado: 26 testes executados, 0 falhas
 
 ## Resultado

@@ -38,7 +38,7 @@ docker compose --profile local up -d moni-db
 
 ```bash
 cd backend
-SPRING_PROFILES_ACTIVE=local ./mvnw spring-boot:run
+SPRING_PROFILES_ACTIVE=local ./gradlew bootRun
 ```
 
 3. Em outro terminal, inicie o frontend:

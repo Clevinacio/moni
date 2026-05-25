@@ -98,7 +98,7 @@ Base: `/api/v1/notifications`
 ## Validacao executada
 ### Backend
 Comando:
-- `cd backend && ./mvnw test`
+- `cd backend && ./gradlew test`
 
 Resultado:
 - Build SUCCESS

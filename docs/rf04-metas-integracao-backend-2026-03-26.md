@@ -79,7 +79,7 @@ Base: `/api/v1/goals`
 
 ## Validacao executada
 Comando:
-- `cd backend && ./mvnw test`
+- `cd backend && ./gradlew test`
 
 Resultado:
 - Build SUCCESS
